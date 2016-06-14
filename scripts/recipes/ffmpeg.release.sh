@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-# Author:
-#  Héctor Molinero Fernández <hector@molinero.xyz>.
+# Author:     Héctor Molinero Fernández <hector@molinero.xyz>
+# Repository: https://github.com/zant95/misc
+# License:    MIT, https://opensource.org/licenses/MIT
 #
 # Dependencies:
 #  autoconf
 #  automake
 #  build-essential
-#  curl
 #  flite1-dev
 #  frei0r-plugins-dev
 #  ladspa-sdk
@@ -56,42 +56,39 @@
 #  libzmq3-dev
 #  libzvbi-dev
 #  pkg-config
-#  wget
 #  yasm
 #
 
-# Exit on errors:
-set -eu -o pipefail
+# Exit on errors
+set -euo pipefail
 
-# Print message methods
-printmsg() {
-	echo -e "\e[1;33m + \e[1;32m$1 \e[0m"
-}
-
-# Globals:
-BIN_DIR="$HOME/.opt/bin"
-INSTALL_DIR="$HOME/.opt/software/ffmpeg"
-TMP_DIR="/tmp/ffmpeg-build"
-PACKAGE_URL="http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2"
-TIMESTAMP=$(curl -sI "$PACKAGE_URL" | grep "Last-Modified:")
+# Globals
+scriptDir=$(dirname "$(readlink -f "$0")")
+binDir="$HOME/.opt/bin"
+installDir="$HOME/.opt/software/ffmpeg"
+tmpDir='/tmp/ffmpeg-build'
+pkgUrl='http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2'
+timestamp=$(curl -sI "$pkgUrl" | grep 'Last-Modified:')
 
 # Process
-if grep "$TIMESTAMP" "$INSTALL_DIR/TIMESTAMP" >/dev/null 2>&1; then
-	printmsg "Up to date."
+source "$scriptDir"/../common
+
+if grep "$timestamp" "$installDir"/timestamp >/dev/null 2>&1; then
+	infoMsg 'Up to date.'
 	exit 0
 fi
 
-printmsg "Preparing workspace..."
-rm -rf "$TMP_DIR"
-mkdir -p "$TMP_DIR"
-cd "$TMP_DIR"
+infoMsg 'Preparing workspace...'
+rm -rf "$tmpDir"
+mkdir -p "$tmpDir"
+cd "$tmpDir"
 
-printmsg "Downloading package..."
-wget "$PACKAGE_URL" --show-progress -qO - | tar -xj --strip-components=1
+infoMsg 'Downloading package...'
+wget "$pkgUrl" --show-progress -qO - | tar -xj --strip-components=1
 
-printmsg "Compiling..."
+infoMsg 'Compiling...'
 ./configure \
-	--prefix="$INSTALL_DIR" \
+	--prefix="$installDir" \
 	--arch=x86_64 \
 	--disable-doc \
 	--disable-shared \
@@ -150,43 +147,42 @@ printmsg "Compiling..."
 #	--enable-libx265
 make -j $(nproc)
 
-printmsg "Installing..."
-rm -rf "$INSTALL_DIR"
-mkdir -p "$BIN_DIR"
+infoMsg 'Installing...'
+rm -rf "$installDir"
+mkdir -p "$binDir"
 
 make install
 
-cat > "$INSTALL_DIR"/ffmpeg-wrapper.sh <<EOF
+cat > "$installDir"/ffmpeg-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-cd "$INSTALL_DIR"
+cd "$installDir"
 
 ./bin/ffmpeg "\$@"
 EOF
-cat > "$INSTALL_DIR"/ffprobe-wrapper.sh <<EOF
+cat > "$installDir"/ffprobe-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-cd "$INSTALL_DIR"
+cd "$installDir"
 
 ./bin/ffprobe "\$@"
 EOF
-cat > "$INSTALL_DIR"/ffserver-wrapper.sh <<EOF
+cat > "$installDir"/ffserver-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-cd "$INSTALL_DIR"
+cd "$installDir"
 
 ./bin/ffserver "\$@"
 EOF
 
-rm -f "$BIN_DIR"/{ffmpeg,ffprobe,ffserver}
-ln -s "$INSTALL_DIR"/ffmpeg-wrapper.sh "$BIN_DIR"/ffmpeg
-ln -s "$INSTALL_DIR"/ffprobe-wrapper.sh "$BIN_DIR"/ffprobe
-ln -s "$INSTALL_DIR"/ffserver-wrapper.sh "$BIN_DIR"/ffserver
-chmod 755 "$BIN_DIR"/{ffmpeg,ffprobe,ffserver}
+ln -fs "$installDir"/ffmpeg-wrapper.sh "$binDir"/ffmpeg
+ln -fs "$installDir"/ffprobe-wrapper.sh "$binDir"/ffprobe
+ln -fs "$installDir"/ffserver-wrapper.sh "$binDir"/ffserver
+chmod 755 "$binDir"/{ffmpeg,ffprobe,ffserver}
 
-printmsg "Creating timestamp..."
-echo "$TIMESTAMP" > "$INSTALL_DIR"/TIMESTAMP
+infoMsg 'Creating timestamp...'
+echo "$timestamp" > "$installDir"/timestamp
 
-printmsg "Removing temp files..."
-rm -rf "$TMP_DIR"
+infoMsg 'Removing temp files...'
+rm -rf "$tmpDir"
 

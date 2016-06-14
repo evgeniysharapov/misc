@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Author:
-#  Héctor Molinero Fernández <hector@molinero.xyz>.
+# Author:     Héctor Molinero Fernández <hector@molinero.xyz>
+# Repository: https://github.com/zant95/misc
+# License:    MIT, https://opensource.org/licenses/MIT
 #
 # Dependencies:
 #  ffmpeg
@@ -10,53 +11,51 @@
 #
 
 # Exit on errors
-set -eu -o pipefail
-
-# Print message methods
-printmsg() {
-	echo -e "\e[1;33m + \e[1;32m$1 \e[0m"
-}
+set -euo pipefail
 
 # Globals
-TMP_DIR="/tmp/music-dl"
-OUT_DIR="$HOME/Downloads/Music-DL"
-FFMPEG_LOC=$(
+scriptDir=$(dirname "$(readlink -f "$0")")
+tmpDir="/tmp/music-dl"
+outDir="$HOME/Downloads/Music-DL"
+ffmpegLoc=$(
 	[ -f "$HOME/.opt/bin/ffmpeg" ] \
 		&& echo "$HOME/.opt/bin/ffmpeg" || echo $(which ffmpeg)
 )
 
 # Process
-printmsg "Preparing workspace..."
-rm -rf "$TMP_DIR"
-mkdir -p "$TMP_DIR"/{before,after}
-cd "$TMP_DIR"
+source "$scriptDir"/common
 
-printmsg "Downloading..."
+infoMsg 'Preparing workspace...'
+rm -rf "$tmpDir"
+mkdir -p "$tmpDir"/{before,after}
+cd "$tmpDir"
+
+infoMsg 'Downloading...'
 youtube-dl "$@" \
-	--ffmpeg-location "$FFMPEG_LOC" \
-	--default-search "ytsearch" \
-	--format "bestaudio" \
-	--output "$TMP_DIR/before/%(title)s"
+	--ffmpeg-location "$ffmpegLoc" \
+	--default-search 'ytsearch' \
+	--format 'bestaudio' \
+	--output "$tmpDir/before/%(title)s"
 
-printmsg "Encoding to VBR MP3..."
-for FILE in "$TMP_DIR/before"/*; do
-	"$FFMPEG_LOC" \
+infoMsg 'Encoding to VBR MP3...'
+for file in "$tmpDir/before"/*; do
+	"$ffmpegLoc" \
 		-hide_banner \
-		-i "$FILE" \
+		-i "$file" \
 		-codec:a libmp3lame \
 		-qscale:a 2 \
-		"$TMP_DIR/after/${FILE##*/}.mp3"
+		"$tmpDir/after/${file##*/}.mp3"
 done
 
 if type mat > /dev/null; then
-	printmsg "Cleaning metadata..."
-	mat "$TMP_DIR"/after/*.mp3
+	infoMsg 'Cleaning metadata...'
+	mat "$tmpDir"/after/*.mp3
 fi
 
-printmsg "Moving to output folder..."
-mkdir -p "$OUT_DIR"
-mv -f "$TMP_DIR"/after/*.mp3 "$OUT_DIR"
+infoMsg 'Moving to output folder...'
+mkdir -p "$outDir"
+mv -f "$tmpDir"/after/*.mp3 "$outDir"
 
-printmsg "Removing temp files..."
-rm -rf "$TMP_DIR"
+infoMsg 'Removing temp files...'
+rm -rf "$tmpDir"
 
