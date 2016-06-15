@@ -68,7 +68,7 @@ Categories=Development;IDE;TextEditor;Utility;
 Keywords=code;vscode;
 StartupNotify=false
 Terminal=false
-Exec=$binDir/code
+Exec=$binDir/vscode
 Icon=$installDir/resources/app/resources/linux/code.png
 MimeType=text/plain;
 EOF
