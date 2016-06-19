@@ -7,7 +7,7 @@
 # Dependencies:
 #  build-essential
 #  golang
-#  libgmp3-dev
+#  libgmp-dev
 #
 
 # Exit on errors
@@ -38,7 +38,7 @@ wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
 
 infoMsg 'Building...'
 make geth
-make test
+#make test
 ./build/bin/geth version
 
 infoMsg 'Installing...'
