@@ -15,7 +15,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-confDir="$HOME/.opt/config/atom"
+homeDir="$HOME/.opt/config/atom"
 installDir="$HOME/.opt/software/atom"
 tmpDir='/tmp/atom-build'
 pkgUrl='https://atom.io/download/deb'
@@ -33,16 +33,17 @@ wget "$pkgUrl" --show-progress -qO 'atom.deb'
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
-mkdir -p "$binDir" "$confDir"/{atom,github} "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"
 
 ar p 'atom.deb' 'data.tar.gz' | tar -xzC "$installDir"
 
 cat > "$installDir"/atom-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-export ATOM_DEV_RESOURCE_PATH="$confDir/github"
-export ATOM_HOME="$confDir/atom"
-
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
 ./usr/bin/atom \\
@@ -52,9 +53,10 @@ EOF
 cat > "$installDir"/apm-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-export ATOM_DEV_RESOURCE_PATH="$confDir/github"
-export ATOM_HOME="$confDir/atom"
-
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
 ./usr/bin/apm "\$@"
@@ -72,7 +74,7 @@ Type=Application
 Name=Atom
 Categories=Development;IDE;TextEditor;Utility;
 Keywords=atom;code;
-StartupNotify=false
+StartupNotify=true
 Terminal=false
 Exec=$binDir/atom %U
 Icon=$installDir/usr/share/pixmaps/atom.png

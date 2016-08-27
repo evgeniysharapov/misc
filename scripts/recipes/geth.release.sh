@@ -16,7 +16,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-confDir="$HOME/.opt/config/geth"
+homeDir="$HOME/.opt/config/geth"
 tmpDir='/tmp/geth-build'
 installDir="$HOME/.opt/software/geth"
 pkgUrl='https://github.com'$(
@@ -37,24 +37,26 @@ infoMsg 'Downloading package...'
 wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
 
 infoMsg 'Building...'
-make geth
-#make test
+make -j $(nproc) geth
 ./build/bin/geth version
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
-mkdir -p "$binDir" "$confDir" "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"
 
 mv "$tmpDir"/build/bin/* "$installDir"
 
 cat > "$installDir"/geth-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
 ./geth \\
-	--datadir "$confDir" \\
-	--ipcpath "$confDir"/geth.ipc \\
+	--support-dao-fork \\
 	"\$@"
 EOF
 

@@ -45,3 +45,4 @@ sudo gtk-update-icon-cache -f "$installDir"/Arc
 
 infoMsg 'Removing temp files...'
 rm -rf "$tmpDir"
+

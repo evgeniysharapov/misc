@@ -10,6 +10,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
+homeDir="$HOME/.opt/config/android-studio"
 installDir="$HOME/.opt/software/android-studio"
 tmpDir='/tmp/android-studio-build'
 pkgUrl=$(
@@ -32,13 +33,28 @@ unzip -q "android-studio.zip"
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
-mkdir -p "$binDir" "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"
+
+cat >> android-studio/bin/idea.properties <<EOF
+
+#---------------------------------------------------------------------
+# Custom properties
+#---------------------------------------------------------------------
+user.home=$homeDir
+idea.config.path=$homeDir/.AndroidStudio/config
+idea.system.path=$homeDir/.AndroidStudio/system
+
+EOF
 
 mv android-studio/* "$installDir"
 
 cat > "$installDir"/android-studio-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
 ./bin/studio.sh "\$@"

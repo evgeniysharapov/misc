@@ -11,12 +11,12 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-confDir="$HOME/.opt/config/parity"
+homeDir="$HOME/.opt/config/parity"
 installDir="$HOME/.opt/software/parity"
 tmpDir='/tmp/parity-build'
 pkgUrl='https://github.com'$(
 	curl -sL 'https://github.com/ethcore/parity/releases/latest' | \
-	egrep -o '/ethcore/parity/releases/download/[^>]+/parity_linux_.+\_amd64\.deb' | \
+	egrep -o '/ethcore/parity/releases/download/[^>]+/parity_.+\_amd64\.deb' | \
 	head -1
 )
 
@@ -33,14 +33,17 @@ wget "$pkgUrl" --show-progress -qO 'parity.deb'
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
-mkdir -p "$binDir" "$confDir" "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"
 
 ar p 'parity.deb' 'data.tar.xz' | tar -xJC "$installDir"
 
 cat > "$installDir"/parity-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-export HOME="$confDir"
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
 ./usr/bin/parity "\$@"

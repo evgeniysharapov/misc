@@ -11,7 +11,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-confDir="$HOME/.opt/config/popcorntime"
+homeDir="$HOME/.opt/config/popcorntime"
 installDir="$HOME/.opt/software/popcorntime"
 tmpDir='/tmp/popcorntime-build'
 pkgUrl=$(
@@ -35,20 +35,22 @@ infoMsg 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$installDir"
 
-ESCAPED_confDir=$(echo "$confDir" | sed -e 's/\\/\\\\/g;s/\//\\\//g;s/&/\\&/g')
+ESCAPED_homeDir=$(echo "$homeDir" | sed -e 's/\\/\\\\/g;s/\//\\\//g;s/&/\\&/g')
 find "$tmpDir"/src -name '*.js' -type f -print0 | \
-	xargs -0 sed -i "s/gui\.App\.dataPath/'$ESCAPED_confDir'/g"
+	xargs -0 sed -i "s/gui\.App\.dataPath/'$ESCAPED_homeDir'/g"
 
 mv "$tmpDir"/* "$installDir"
 
 cat > "$installDir"/popcorntime-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
-./Popcorn-Time \\
-	--data-path="$confDir" \\
-	"\$@"
+./Popcorn-Time "\$@"
 EOF
 
 ln -fs "$installDir"/popcorntime-wrapper.sh "$binDir"/popcorntime
@@ -61,7 +63,7 @@ Type=Application
 Name=Popcorn Time
 Categories=AudioVideo;Video;Network;Player;P2P;
 Keywords=popcorn;tv;show;movie;
-StartupNotify=false
+StartupNotify=true
 Terminal=false
 Exec=$binDir/popcorntime %u
 Icon=$installDir/src/app/images/icon.png

@@ -16,7 +16,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-confDir="$HOME/.opt/config/zeronet"
+homeDir="$HOME/.opt/config/zeronet"
 installDir="$HOME/.opt/software/zeronet"
 tmpDir='/tmp/zeronet-build'
 pkgUrl='https://github.com/HelloZeroNet/ZeroNet/archive/master.tar.gz'
@@ -34,7 +34,7 @@ wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
-mkdir -p "$binDir" "$confDir"/{data,log} "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"
 
 mv "$tmpDir"/* "$installDir"
 
@@ -47,6 +47,10 @@ EOF
 cat > "$installDir"/zeronet-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
 if type tor > /dev/null && ! pidof tor > /dev/null; then
@@ -54,9 +58,9 @@ if type tor > /dev/null && ! pidof tor > /dev/null; then
 fi
 
 python zeronet.py \\
-	--config_file "$confDir"/zeronet.conf \\
-	--data_dir "$confDir"/data \\
-	--log_dir "$confDir"/log \\
+	--config_file "$homeDir"/zeronet.conf \\
+	--data_dir "$homeDir"/data \\
+	--log_dir "$homeDir"/log \\
 	"\$@"
 EOF
 

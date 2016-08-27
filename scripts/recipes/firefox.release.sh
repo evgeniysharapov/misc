@@ -11,6 +11,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
+homeDir="$HOME/.opt/config/firefox"
 installDir="$HOME/.opt/software/firefox"
 tmpDir='/tmp/firefox-build'
 pkgUrl='https://download.mozilla.org/?lang=en-US&os=linux64&product=firefox-latest'
@@ -28,13 +29,17 @@ wget "$pkgUrl" --show-progress -qO - | tar -xj --strip-components=1
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
-mkdir -p "$binDir" "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"
 
 mv "$tmpDir"/* "$installDir"
 
 cat > "$installDir"/firefox-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
 ./firefox "\$@"

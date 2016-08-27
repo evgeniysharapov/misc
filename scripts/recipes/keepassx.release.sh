@@ -10,12 +10,13 @@
 #  build-essential
 #  cmake
 #  libgcrypt20-dev
+#  libqt4-dev
 #  libqt5x11extras5-dev
+#  libxi-dev
 #  libxtst-dev
-#  pkg-config
-#  qt4-default
 #  qtbase5-dev
 #  qttools5-dev
+#  qttools5-dev-tools
 #  zlib1g-dev
 #
 
@@ -25,7 +26,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-confDir="$HOME/.opt/config/keepassx"
+homeDir="$HOME/.opt/config/keepassx"
 installDir="$HOME/.opt/software/keepassx"
 tmpDir='/tmp/keepassx-build'
 pkgUrl='https://github.com'$(
@@ -54,17 +55,26 @@ make test
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
-mkdir -p "$binDir" "$confDir" "$installDir"
+mkdir -p "$binDir" "$homeDir"/.config "$installDir"
 
 DESTDIR="$installDir" make install
+
+cat > "$homeDir"/.config/Trolltech.conf <<EOF
+[Qt]
+style=GTK+
+EOF
 
 cat > "$installDir"/keepassx-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
 ./usr/local/bin/keepassx \\
-	--config "$confDir"/keepassx.ini \\
+	--config "$homeDir"/keepassx.ini \\
 	"\$@"
 EOF
 
@@ -79,7 +89,7 @@ Type=Application
 Name=KeePassX
 Categories=Utility;
 Keywords=password;
-StartupNotify=false
+StartupNotify=true
 Terminal=false
 Exec=$binDir/keepassx %f
 #Icon=$installDir/usr/local/share/icons/hicolor/scalable/apps/keepassx.svgz

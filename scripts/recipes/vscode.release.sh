@@ -15,7 +15,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-confDir="$HOME/.opt/config/vscode"
+homeDir="$HOME/.opt/config/vscode"
 installDir="$HOME/.opt/software/vscode"
 tmpDir='/tmp/vscode-build'
 pkgUrl='http://go.microsoft.com/fwlink/?LinkID=620884'
@@ -36,15 +36,17 @@ rm -rf ./VSCode-linux-x64 vscode.zip
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
-mkdir -p "$binDir" "$confDir" "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"
 
 mv "$tmpDir"/* "$installDir"
 
 cat > "$installDir"/vscode-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-export HOME="$confDir"
-export XDG_CONFIG_HOME="$confDir"
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
 ./code "\$@"
@@ -61,7 +63,7 @@ Type=Application
 Name=Visual Studio Code
 Categories=Development;IDE;TextEditor;Utility;
 Keywords=code;vscode;
-StartupNotify=false
+StartupNotify=true
 Terminal=false
 Exec=$binDir/vscode
 Icon=$installDir/resources/app/resources/linux/code.png
