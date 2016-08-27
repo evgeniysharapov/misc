@@ -30,6 +30,7 @@ sudo rm -rf "$installDir"
 sudo mkdir -p "$installDir"
 
 sudo mv "$tmpDir"/* "$installDir"
+sudo gtk-update-icon-cache -f "$installDir"
 
 infoMsg 'Removing temp files...'
 rm -rf "$tmpDir"

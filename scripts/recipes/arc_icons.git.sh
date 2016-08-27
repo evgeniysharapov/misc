@@ -34,14 +34,14 @@ wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
 infoMsg 'Building...'
 ./autogen.sh --prefix=/usr
 
-sed -i 's|^\(Inherits=\).*|\1elementary,Paper,Adwaita,gnome,hicolor|g' \
+sed -i 's|^\(Inherits=\).*|\1Paper,Moka,elementary,Adwaita,gnome,hicolor|g' \
 	./Arc/index.theme
 
 infoMsg 'Installing...'
 sudo rm -rf "$installDir"/Arc
 
 sudo make install
+sudo gtk-update-icon-cache -f "$installDir"/Arc
 
 infoMsg 'Removing temp files...'
 rm -rf "$tmpDir"
-
