@@ -29,27 +29,22 @@ mkdir -p "$tmpDir"
 cd "$tmpDir"
 
 infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO - | tar -xJ --strip-components=1
+wget "$pkgUrl" --show-progress -qO vscode.zip
+unzip vscode.zip
+mv ./VSCode-linux-x64/* ./
+rm -rf ./VSCode-linux-x64 vscode.zip
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$confDir" "$installDir"
-
-sed -i '/sourceMappingURL/d' resources/app/out/main.js
-cat >> resources/app/out/main.js <<EOF
-;
-app.setPath('appData',		'$confDir/appData');
-app.setPath('cache',		'$confDir/cache');
-app.setPath('home',			'$confDir/home');
-app.setPath('userCache',	'$confDir/userCache');
-app.setPath('userData',		'$confDir/userData');
-EOF
 
 mv "$tmpDir"/* "$installDir"
 
 cat > "$installDir"/vscode-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
+export HOME="$confDir"
+export XDG_CONFIG_HOME="$confDir"
 cd "$installDir"
 
 ./code "\$@"
