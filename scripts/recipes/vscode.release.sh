@@ -29,10 +29,7 @@ mkdir -p "$tmpDir"
 cd "$tmpDir"
 
 infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO vscode.zip
-unzip vscode.zip
-mv ./VSCode-linux-x64/* ./
-rm -rf ./VSCode-linux-x64 vscode.zip
+wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
