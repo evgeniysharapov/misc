@@ -20,7 +20,11 @@
 #  libgtkglext1-dev
 #  liblua5.1-0-dev
 #  libosmesa6-dev
+#  libpcap-dev
 #  libsdl1.2-dev
+#  libsoundtouch-dev
+#  libzzip-dev
+#  lua5.1
 #  subversion
 #  zlib1g-dev
 #
@@ -49,9 +53,9 @@ cd "$tmpDir"
 
 infoMsg 'Downloading package...'
 if [ "$svnRev" == "latest" ]; then
-	svn checkout "$svnUrl" .
+	svn checkout "$svnUrl" -q .
 else
-	svn checkout "$svnUrl" -r "$svnRev" .
+	svn checkout "$svnUrl" -qr "$svnRev" .
 fi
 
 infoMsg 'Building...'
@@ -83,15 +87,17 @@ patch ./src/firmware.cpp <<'EOF'
 EOF
 
 ./autogen.sh
-CFLAGS='-O2 -march=native -mfpmath=sse -std=gnu++14' \
+CFLAGS='-std=gnu++14 -O2 -march=native -mfpmath=sse' \
 CXXFLAGS="$CFLAGS" LDFLAGS="$CFLAGS" \
 ./configure \
 	--prefix="$installDir" \
+	--enable-debug \
+	--enable-glade \
 	--enable-glx \
 	--enable-hud \
 	--enable-openal \
-	--enable-wifi \
-	--enable-debug
+	--enable-osmesa \
+	--enable-wifi
 make -j $(nproc)
 
 infoMsg 'Installing...'
@@ -111,7 +117,7 @@ cd "$installDir"
 
 ./bin/desmume \\
 	--jit-enable \\
-	--jit-size 10 \\
+	--jit-size 15 \\
 	--preload-rom \\
 	--lang 5 \\
 	"\$@"
@@ -124,8 +130,17 @@ if [ ! -f "$homeDir"/.config/desmume/config.cfg ]; then
 	ScreenLayout=1
 	ShowToolbar=false
 	ShowStatusbar=false
-	Filter=18
+	Filter=4
 	SecondaryFilter=3
+
+	[Audio]
+	Synchronization=3
+	Interpolation=1
+
+	[Config]
+	FpsLimiter=true
+	AudoFrameskip=true
+	Frameskip=2
 	EOF
 fi
 
