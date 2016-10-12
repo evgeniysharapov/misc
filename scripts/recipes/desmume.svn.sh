@@ -37,7 +37,7 @@ installDir="$baseDir/install"
 tmpDir=$(mktemp /tmp/desmume.XXXXXXXX)
 svnUrl='svn://svn.code.sf.net/p/desmume/code/trunk'
 # 0.9.11 -> r5146
-svnRev='latest'
+svnRev='r5565'
 
 # Process
 source "$scriptDir"/../common
@@ -57,18 +57,34 @@ fi
 infoMsg 'Building...'
 cd ./desmume
 
-# Change default language to spanish
+# Change firmware settings
 dos2unix ./src/firmware.cpp
 patch ./src/firmware.cpp <<'EOF'
---- firmware.cpp
-+++ firmware.cpp
+--- src/firmware.cpp
++++ src/firmware.cpp
+@@ -906 +906 @@
+-	const char *default_nickname = "DeSmuME";
++	const char *default_nickname = "Zant";
+@@ -907 +907 @@
+-	const char *default_message = "DeSmuME makes you happy!";
++	const char *default_message = "Ceci n'est pas un pepe";
+@@ -914 +914 @@
+-	fw_config->fav_colour = 7;
++	fw_config->fav_colour = 0;
+@@ -916 +916 @@
+-	fw_config->birth_day = 23;
++	fw_config->birth_day = 9;
+@@ -917 +917 @@
+-	fw_config->birth_month = 6;
++	fw_config->birth_month = 3;
 @@ -932 +932 @@
 -	fw_config->language = 1;
 +	fw_config->language = 5;
 EOF
 
 ./autogen.sh
-CFLAGS='-O2 -march=native -mfpmath=sse -std=gnu++14' CXXFLAGS="$CFLAGS" \
+CFLAGS='-O2 -march=native -mfpmath=sse -std=gnu++14' \
+CXXFLAGS="$CFLAGS" LDFLAGS="$CFLAGS" \
 ./configure \
 	--prefix="$installDir" \
 	--enable-glx \
@@ -97,6 +113,7 @@ cd "$installDir"
 	--jit-enable \\
 	--jit-size 10 \\
 	--preload-rom \\
+	--lang 5 \\
 	"\$@"
 EOF
 
