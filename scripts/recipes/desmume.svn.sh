@@ -8,6 +8,7 @@
 #  autoconf
 #  automake
 #  build-essential
+#  dos2unix
 #  gettext
 #  intltool
 #  libagg-dev
@@ -36,8 +37,7 @@ installDir="$baseDir/install"
 tmpDir=$(mktemp /tmp/desmume.XXXXXXXX)
 svnUrl='svn://svn.code.sf.net/p/desmume/code/trunk'
 # 0.9.11 -> r5146
-# Last success -> r5532
-svnRev='r5565'
+svnRev='latest'
 
 # Process
 source "$scriptDir"/../common
@@ -67,20 +67,9 @@ patch ./src/firmware.cpp <<'EOF'
 +	fw_config->language = 5;
 EOF
 
-# Workaround for 'https://sourceforge.net/p/desmume/bugs/1599/'
-dos2unix ./src/types.h
-patch ./src/types.h <<'EOF'
---- types.h
-+++ types.h
-@@ -84,4 +83,0 @@
--	#ifdef __AVX2__
--		#define ENABLE_AVX2
--	#endif
--
-EOF
-
 ./autogen.sh
-CXXFLAGS='-O2 -march=native -mfpmath=sse' ./configure \
+CFLAGS='-O2 -march=native -mfpmath=sse -std=gnu++14' CXXFLAGS="$CFLAGS" \
+./configure \
 	--prefix="$installDir" \
 	--enable-glx \
 	--enable-hud \
