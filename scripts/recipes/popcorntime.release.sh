@@ -11,9 +11,10 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-homeDir="$HOME/.opt/config/popcorntime"
-installDir="$HOME/.opt/software/popcorntime"
-tmpDir='/tmp/popcorntime-build'
+baseDir="$HOME/.opt/software/popcorntime"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/popcorntime.XXXXXXXX)
 pkgUrl=$(
 	curl -sL 'https://popcorntime.sh/en' | \
 	egrep -o 'https://[^>]+-Linux-64\.tar\.xz' | \
@@ -32,8 +33,8 @@ infoMsg 'Downloading package...'
 wget "$pkgUrl" --show-progress -qO - | tar -xJ --strip-components=1
 
 infoMsg 'Installing...'
-rm -rf "$installDir"
-mkdir -p "$binDir" "$installDir"
+rm -rf "$installDir" "$baseDir/tmp"
+mkdir -p "$binDir" "$homeDir" "$installDir" "$baseDir/tmp"
 
 ESCAPED_homeDir=$(echo "$homeDir" | sed -e 's/\\/\\\\/g;s/\//\\\//g;s/&/\\&/g')
 find "$tmpDir"/src -name '*.js' -type f -print0 | \
@@ -48,9 +49,12 @@ export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
+export TMPDIR="$baseDir/tmp"
 cd "$installDir"
 
 ./Popcorn-Time "\$@"
+
+rm -rf "$baseDir/tmp"/*
 EOF
 
 ln -fs "$installDir"/popcorntime-wrapper.sh "$binDir"/popcorntime

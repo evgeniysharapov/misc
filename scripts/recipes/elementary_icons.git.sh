@@ -11,7 +11,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 installDir='/usr/share/icons/elementary'
-tmpDir='/tmp/elementary-icons-build'
+tmpDir=$(mktemp /tmp/elementary-icon-theme.XXXXXXXX)
 pkgUrl='https://github.com/elementary/icons/archive/master.tar.gz'
 
 # Process

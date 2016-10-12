@@ -11,9 +11,10 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-homeDir="$HOME/.opt/config/firefox-aurora"
-installDir="$HOME/.opt/software/firefox-aurora"
-tmpDir='/tmp/firefox-aurora-build'
+baseDir="$HOME/.opt/software/firefox-aurora"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/firefox-aurora.XXXXXXXX)
 pkgUrl='https://download.mozilla.org/?lang=en-US&os=linux64&product=firefox-aurora-latest-ssl'
 
 # Process

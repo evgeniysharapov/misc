@@ -15,9 +15,10 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-homeDir="$HOME/.opt/config/atom"
-installDir="$HOME/.opt/software/atom"
-tmpDir='/tmp/atom-build'
+baseDir="$HOME/.opt/software/atom"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/atom.XXXXXXXX)
 pkgUrl='https://atom.io/download/deb'
 
 # Process

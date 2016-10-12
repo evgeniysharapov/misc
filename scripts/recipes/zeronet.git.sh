@@ -16,9 +16,10 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-homeDir="$HOME/.opt/config/zeronet"
-installDir="$HOME/.opt/software/zeronet"
-tmpDir='/tmp/zeronet-build'
+baseDir="$HOME/.opt/software/zeronet"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/zeronet.XXXXXXXX)
 pkgUrl='https://github.com/HelloZeroNet/ZeroNet/archive/master.tar.gz'
 
 # Process

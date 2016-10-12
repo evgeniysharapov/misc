@@ -65,8 +65,9 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-installDir="$HOME/.opt/software/ffmpeg"
-tmpDir='/tmp/ffmpeg-build'
+baseDir="$HOME/.opt/software/ffmpeg"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/ffmpeg.XXXXXXXX)
 pkgUrl='http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2'
 timestamp=$(curl -sI "$pkgUrl" | grep 'Last-Modified:')
 

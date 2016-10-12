@@ -11,7 +11,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 installDir='/usr/share/fonts/opentype/FiraCode'
-tmpDir='/tmp/firacode-font-build'
+tmpDir=$(mktemp /tmp/firacode-font.XXXXXXXX)
 pkgUrl='https://github.com'$(
 	curl -sL 'https://github.com/tonsky/FiraCode/releases/latest' | \
 	egrep -o '/tonsky/FiraCode/releases/download/[^>]+/FiraCode_.+\.zip' | \

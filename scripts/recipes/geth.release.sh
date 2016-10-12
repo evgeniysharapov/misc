@@ -16,9 +16,10 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-homeDir="$HOME/.opt/config/geth"
-tmpDir='/tmp/geth-build'
-installDir="$HOME/.opt/software/geth"
+baseDir="$HOME/.opt/software/geth"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/geth.XXXXXXXX)
 pkgUrl='https://github.com'$(
 	curl -sL 'https://github.com/ethereum/go-ethereum/releases/latest' | \
 	egrep -o '/ethereum/go-ethereum/archive/[^>]+\.tar\.gz' | \

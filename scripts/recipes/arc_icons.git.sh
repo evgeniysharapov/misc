@@ -17,7 +17,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 installDir='/usr/share/icons'
-tmpDir='/tmp/arc-icon-theme-build'
+tmpDir=$(mktemp /tmp/arc-icon-theme.XXXXXXXX)
 pkgUrl='https://github.com/horst3180/arc-icon-theme/archive/master.tar.gz'
 
 # Process

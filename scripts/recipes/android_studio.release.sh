@@ -3,6 +3,12 @@
 # Author:     Héctor Molinero Fernández <hector@molinero.xyz>
 # Repository: https://github.com/zant95/misc
 # License:    MIT, https://opensource.org/licenses/MIT
+#
+# Dependencies:
+#  bridge-utils
+#  libvirt-bin
+#  qemu-kvm
+#
 
 # Exit on errors
 set -euo pipefail
@@ -10,9 +16,10 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-homeDir="$HOME/.opt/config/android-studio"
-installDir="$HOME/.opt/software/android-studio"
-tmpDir='/tmp/android-studio-build'
+baseDir="$HOME/.opt/software/android-studio"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/android-studio.XXXXXXXX)
 pkgUrl=$(
 	curl -sL 'https://developer.android.com/sdk/index.html' | \
 	egrep -o 'https://dl\.google\.com/[^>]+/android-studio-ide-.+-linux\.zip' | \
@@ -35,15 +42,8 @@ infoMsg 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
-cat >> android-studio/bin/idea.properties <<EOF
-
-#---------------------------------------------------------------------
-# Custom properties
-#---------------------------------------------------------------------
-user.home=$homeDir
-idea.config.path=$homeDir/.AndroidStudio/config
-idea.system.path=$homeDir/.AndroidStudio/system
-
+cat > android-studio/bin/custom.vmoptions <<EOF
+-Duser.home=$homeDir
 EOF
 
 mv android-studio/* "$installDir"
@@ -55,6 +55,7 @@ export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
+export STUDIO_VM_OPTIONS="$installDir/bin/custom.vmoptions"
 cd "$installDir"
 
 ./bin/studio.sh "\$@"

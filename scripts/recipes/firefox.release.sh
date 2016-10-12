@@ -11,9 +11,10 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-homeDir="$HOME/.opt/config/firefox"
-installDir="$HOME/.opt/software/firefox"
-tmpDir='/tmp/firefox-build'
+baseDir="$HOME/.opt/software/firefox"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/firefox.XXXXXXXX)
 pkgUrl='https://download.mozilla.org/?lang=en-US&os=linux64&product=firefox-latest'
 
 # Process

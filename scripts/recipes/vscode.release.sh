@@ -15,9 +15,10 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-homeDir="$HOME/.opt/config/vscode"
-installDir="$HOME/.opt/software/vscode"
-tmpDir='/tmp/vscode-build'
+baseDir="$HOME/.opt/software/vscode"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/vscode.XXXXXXXX)
 pkgUrl='http://go.microsoft.com/fwlink/?LinkID=620884'
 
 # Process

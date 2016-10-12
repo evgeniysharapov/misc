@@ -11,9 +11,10 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-homeDir="$HOME/.opt/config/parity"
-installDir="$HOME/.opt/software/parity"
-tmpDir='/tmp/parity-build'
+baseDir="$HOME/.opt/software/parity"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/parity.XXXXXXXX)
 pkgUrl='https://github.com'$(
 	curl -sL 'https://github.com/ethcore/parity/releases/latest' | \
 	egrep -o '/ethcore/parity/releases/download/[^>]+/parity_.+\_amd64\.deb' | \

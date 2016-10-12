@@ -11,7 +11,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 installDir='/usr/share/icons/Paper'
-tmpDir='/tmp/paper-icons-build'
+tmpDir=$(mktemp /tmp/paper-icon-theme.XXXXXXXX)
 pkgUrl='https://github.com/snwh/paper-icon-theme/archive/master.tar.gz'
 
 # Process

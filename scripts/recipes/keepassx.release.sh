@@ -26,9 +26,10 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-homeDir="$HOME/.opt/config/keepassx"
-installDir="$HOME/.opt/software/keepassx"
-tmpDir='/tmp/keepassx-build'
+baseDir="$HOME/.opt/software/keepassx"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp /tmp/keepassx.XXXXXXXX)
 pkgUrl='https://github.com'$(
 	curl -sL 'https://github.com/keepassx/keepassx/releases' | \
 	egrep -o '/keepassx/keepassx/archive/[^>]+\.tar\.gz' | \

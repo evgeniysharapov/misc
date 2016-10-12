@@ -11,7 +11,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 installDir='/usr/share/themes/Paper'
-tmpDir='/tmp/paper-theme-build'
+tmpDir=$(mktemp /tmp/paper-gtk-theme.XXXXXXXX)
 pkgUrl='https://github.com/snwh/paper-gtk-theme/archive/master.tar.gz'
 
 # Process
