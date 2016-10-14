@@ -106,23 +106,6 @@ mkdir -p "$binDir" "$homeDir"/.local/share "$installDir"
 
 make install
 
-cat > "$installDir"/desmume-wrapper.sh <<EOF
-#!/usr/bin/env bash
-
-export HOME="$homeDir"
-export XDG_CONFIG_HOME="$homeDir/.config"
-export XDG_CACHE_HOME="$homeDir/.cache"
-export XDG_DATA_HOME="$homeDir/.local/share"
-cd "$installDir"
-
-./bin/desmume \\
-	--jit-enable \\
-	--jit-size 15 \\
-	--preload-rom \\
-	--lang 5 \\
-	"\$@"
-EOF
-
 if [ ! -f "$homeDir"/.config/desmume/config.cfg ]; then
 	mkdir -p "$homeDir"/.config/desmume
 	cat > "$homeDir"/.config/desmume/config.cfg <<-EOF
@@ -143,6 +126,23 @@ if [ ! -f "$homeDir"/.config/desmume/config.cfg ]; then
 	Frameskip=2
 	EOF
 fi
+
+cat > "$installDir"/desmume-wrapper.sh <<EOF
+#!/usr/bin/env bash
+
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+cd "$installDir"
+
+./bin/desmume \\
+	--jit-enable \\
+	--jit-size 15 \\
+	--preload-rom \\
+	--lang 5 \\
+	"\$@"
+EOF
 
 ln -fs "$installDir"/desmume-wrapper.sh "$binDir"/desmume
 chmod 755 "$binDir"/desmume
