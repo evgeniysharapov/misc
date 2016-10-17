@@ -71,9 +71,14 @@ tmpDir=$(mktemp /tmp/ffmpeg.XXXXXXXX)
 pkgUrl='http://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2'
 timestamp=$(curl -sI "$pkgUrl" | grep 'Last-Modified:')
 
-# Process
-source "$scriptDir"/../common
+# Load helpers
+if [ -f "$scriptDir"/_helpers.sh ]; then
+	source "$scriptDir"/_helpers.sh
+else
+	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
+fi
 
+# Process
 if grep "$timestamp" "$installDir"/timestamp >/dev/null 2>&1; then
 	infoMsg 'Up to date.'
 	exit 0

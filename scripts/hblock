@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Author:     Héctor Molinero Fernández <hector@molinero.xyz>
+# Repository: https://github.com/zant95/misc
+# License:    MIT, https://opensource.org/licenses/MIT
+#
+
+curl -sL 'https://raw.githubusercontent.com/zant95/hBlock/master/hblock' | sh -s - "$@"

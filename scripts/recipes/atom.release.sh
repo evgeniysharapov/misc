@@ -21,9 +21,14 @@ installDir="$baseDir/install"
 tmpDir=$(mktemp /tmp/atom.XXXXXXXX)
 pkgUrl='https://atom.io/download/deb'
 
-# Process
-source "$scriptDir"/../common
+# Load helpers
+if [ -f "$scriptDir"/_helpers.sh ]; then
+	source "$scriptDir"/_helpers.sh
+else
+	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
+fi
 
+# Process
 infoMsg 'Preparing workspace...'
 rm -rf "$tmpDir"
 mkdir -p "$tmpDir"

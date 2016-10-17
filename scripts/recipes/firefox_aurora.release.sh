@@ -17,9 +17,14 @@ installDir="$baseDir/install"
 tmpDir=$(mktemp /tmp/firefox-aurora.XXXXXXXX)
 pkgUrl='https://download.mozilla.org/?lang=en-US&os=linux64&product=firefox-aurora-latest-ssl'
 
-# Process
-source "$scriptDir"/../common
+# Load helpers
+if [ -f "$scriptDir"/_helpers.sh ]; then
+	source "$scriptDir"/_helpers.sh
+else
+	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
+fi
 
+# Process
 infoMsg 'Preparing workspace...'
 rm -rf "$tmpDir"
 mkdir -p "$tmpDir"

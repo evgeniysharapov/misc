@@ -22,9 +22,14 @@ ffmpegLoc=$(
 		&& echo "$HOME/.opt/bin/ffmpeg" || echo $(which ffmpeg)
 )
 
-# Process
-source "$scriptDir"/common
+# Load helpers
+if [ -f "$scriptDir"/recipes/_helpers.sh ]; then
+	source "$scriptDir"/recipes/_helpers.sh
+else
+	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
+fi
 
+# Process
 infoMsg 'Preparing workspace...'
 rm -rf "$tmpDir"
 mkdir -p "$tmpDir"/{before,after}

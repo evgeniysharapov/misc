@@ -39,7 +39,7 @@ libx264Git='https://git.videolan.org/git/x264.git'
 libsdlGit='https://github.com/spurious/SDL-mirror.git'
 ffmpegUrl='https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2'
 
-# Methods:
+# Methods
 doConfigure() {
 	./configure \
 		--prefix="$prefix" \
@@ -72,9 +72,14 @@ doCMakeAndInstall() {
 	doMakeAndInstall
 }
 
-# Process
-source "$scriptDir"/../common
+# Load helpers
+if [ -f "$scriptDir"/_helpers.sh ]; then
+	source "$scriptDir"/_helpers.sh
+else
+	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
+fi
 
+# Process
 export PKG_CONFIG_LIBDIR=
 export PKG_CONFIG_PATH="$prefix/lib/pkgconfig"
 export PATH="$PATH:$prefix/bin"

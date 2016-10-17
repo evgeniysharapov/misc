@@ -41,17 +41,22 @@ installDir="$baseDir/install"
 tmpDir=$(mktemp /tmp/desmume.XXXXXXXX)
 svnUrl='svn://svn.code.sf.net/p/desmume/code/trunk'
 # 0.9.11 -> r5146
-svnRev='r5565'
+svnRev='latest'
+
+# Load helpers
+if [ -f "$scriptDir"/_helpers.sh ]; then
+	source "$scriptDir"/_helpers.sh
+else
+	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
+fi
 
 # Process
-source "$scriptDir"/../common
-
 infoMsg 'Preparing workspace...'
 rm -rf "$tmpDir"
 mkdir "$tmpDir"
 cd "$tmpDir"
 
-infoMsg 'Downloading package...'
+infoMsg 'Cloning remote repository...'
 if [ "$svnRev" == "latest" ]; then
 	svn checkout "$svnUrl" -q .
 else
