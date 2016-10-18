@@ -5,4 +5,4 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 
-curl -sL 'https://raw.githubusercontent.com/zant95/hblock/master/android/make_flashable_zip_from_remote.sh' | sh
+curl -sL 'https://github.com/zant95/hBlock/raw/master/android/make_flashable_zip_from_remote.sh' | sh
