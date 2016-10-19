@@ -14,7 +14,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/popcorntime"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/popcorntime.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/popcorntime.XXXXXXXX)
 pkgUrl=$(
 	curl -sL 'https://popcorntime.sh/en' | \
 	egrep -o 'https://[^>]+-Linux-64\.tar\.xz' | \
@@ -75,7 +75,8 @@ Keywords=popcorn;tv;show;movie;
 StartupNotify=true
 Terminal=false
 Exec=$binDir/popcorntime %u
-Icon=$installDir/src/app/images/icon.png
+Icon=popcorntime
+#Icon=$installDir/src/app/images/icon.png
 MimeType=application/x-bittorrent;x-scheme-handler/magnet;
 EOF
 

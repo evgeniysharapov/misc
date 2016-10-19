@@ -21,7 +21,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 installDir="$HOME/ffmpeg_win64"
-tmpDir=$(mktemp /tmp/ffmpeg-win64.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/ffmpeg-win64.XXXXXXXX)
 host='x86_64-w64-mingw32'
 prefix="$tmpDir/build"
 

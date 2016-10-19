@@ -13,7 +13,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/eclipse-jee"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/eclipse-jee.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/eclipse-jee.XXXXXXXX)
 pkgBaseUrl='https://www.mirrorservice.org/sites/download.eclipse.org/eclipseMirror/technology/epp/downloads/release'
 pkgVersion=$(curl -sL "$pkgBaseUrl/release.xml" | sed -nE 's/<present>(.+)<\/present>/\1/g;/^</!p')
 pkgUrl="$pkgBaseUrl/$pkgVersion"/$(
@@ -81,8 +81,8 @@ Keywords=eclipse;ide;
 StartupNotify=true
 Terminal=false
 Exec=$binDir/eclipse-jee %f
-#Icon=$installDir/eclipse.xpm
 Icon=eclipse
+#Icon=$installDir/eclipse.xpm
 EOF
 
 infoMsg 'Removing temp files...'

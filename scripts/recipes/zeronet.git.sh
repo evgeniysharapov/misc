@@ -19,7 +19,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/zeronet"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/zeronet.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/zeronet.XXXXXXXX)
 pkgUrl='https://github.com/HelloZeroNet/ZeroNet/archive/master.tar.gz'
 
 # Load helpers
@@ -78,7 +78,9 @@ cat > "$HOME/.local/share/applications/opt.zeronet.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=ZeroNet
-StartupNotify=false
+Categories=Internet;WWW;Web;
+Keywords=internet;
+StartupNotify=true
 Terminal=true
 Exec=$binDir/zeronet
 Icon=terminal

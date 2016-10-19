@@ -38,7 +38,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/desmume"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/desmume.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/desmume.XXXXXXXX)
 svnUrl='svn://svn.code.sf.net/p/desmume/code/trunk'
 # 0.9.11 -> r5146
 svnRev='latest'
@@ -159,11 +159,11 @@ cat > "$HOME/.local/share/applications/opt.desmume.desktop" <<EOF
 Type=Application
 Name=DeSmuME
 Categories=Game;Emulator;
-Keywords=nintendo;ds;emulator
+Keywords=nintendo;ds;emulator;
 StartupNotify=true
-Terminal=false
+Terminal=true
 Exec=$binDir/desmume %f
-#Icon=DeSmuME
+#Icon=desmume
 Icon=$installDir/share/pixmaps/DeSmuME.xpm
 MimeType=application/x-nintendo-ds-rom;
 EOF

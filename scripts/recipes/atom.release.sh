@@ -18,7 +18,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/atom"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/atom.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/atom.XXXXXXXX)
 pkgUrl='https://atom.io/download/deb'
 
 # Load helpers
@@ -83,7 +83,8 @@ Keywords=atom;code;
 StartupNotify=true
 Terminal=false
 Exec=$binDir/atom %U
-Icon=$installDir/usr/share/pixmaps/atom.png
+Icon=atom
+#Icon=$installDir/usr/share/pixmaps/atom.png
 MimeType=text/plain;
 EOF
 

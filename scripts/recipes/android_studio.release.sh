@@ -19,7 +19,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/android-studio"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/android-studio.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/android-studio.XXXXXXXX)
 pkgUrl=$(
 	curl -sL 'https://developer.android.com/sdk/index.html' | \
 	egrep -o 'https://dl\.google\.com/[^>]+/android-studio-ide-.+-linux\.zip' | \
@@ -80,8 +80,8 @@ Keywords=android;studio;ide;
 StartupNotify=true
 Terminal=false
 Exec=$binDir/android-studio %f
-#Icon=$installDir/bin/studio.png
 Icon=android-sdk
+#Icon=$installDir/bin/studio.png
 MimeType=application/x-extension-iml;
 StartupWMClass=jetbrains-studio
 EOF

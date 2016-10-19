@@ -20,7 +20,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 installDir='/usr/share/themes'
-tmpDir=$(mktemp /tmp/arc-gtk-theme.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/arc-gtk-theme.XXXXXXXX)
 pkgUrl='https://github.com/horst3180/arc-theme/archive/master.tar.gz'
 
 # Load helpers

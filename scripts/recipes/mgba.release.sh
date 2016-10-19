@@ -5,9 +5,25 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 # Dependencies:
+#  autoconf
+#  automake
 #  build-essential
-#  golang
-#  libgmp-dev
+#  cmake
+#  ffmpeg
+#  imagemagick
+#  libavcodec-dev
+#  libavformat-dev
+#  libavresample-dev
+#  libedit-dev
+#  libepoxy-dev
+#  libmagickwand-dev
+#  libminizip-dev
+#  libpng12-dev
+#  libsdl2-dev
+#  libzip-dev
+#  qtbase5-dev
+#  qtmultimedia5-dev
+#  zlib1g-dev
 #
 
 # Exit on errors
@@ -16,13 +32,13 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-baseDir="$HOME/.opt/software/geth"
+baseDir="$HOME/.opt/software/mgba"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp -d /tmp/geth.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/mgba.XXXXXXXX)
 pkgUrl='https://github.com'$(
-	curl -sL 'https://github.com/ethereum/go-ethereum/releases/latest' | \
-	egrep -o '/ethereum/go-ethereum/archive/[^>]+\.tar\.gz' | \
+	curl -sL 'https://github.com/mgba-emu/mgba/releases/latest' | \
+	egrep -o '/mgba-emu/mgba/archive/[^>]+\.tar\.gz' | \
 	head -1
 )
 
@@ -43,16 +59,19 @@ infoMsg 'Downloading package...'
 wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
 
 infoMsg 'Building...'
-make -j $(nproc) geth
-./build/bin/geth version
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX:PATH="$installDir" ..
+
+make -j $(nproc)
 
 infoMsg 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
-mv "$tmpDir"/build/bin/* "$installDir"
+make install
 
-cat > "$installDir"/geth-wrapper.sh <<EOF
+cat > "$installDir"/mgba-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
 export HOME="$homeDir"
@@ -61,13 +80,27 @@ export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
-./geth \\
-	--support-dao-fork \\
-	"\$@"
+./bin/mgba-qt "\$@"
 EOF
 
-ln -fs "$installDir"/geth-wrapper.sh "$binDir"/geth
-chmod 755 "$binDir"/geth
+ln -fs "$installDir"/mgba-wrapper.sh "$binDir"/mgba
+chmod 755 "$binDir"/mgba
+
+infoMsg 'Creating launcher...'
+mkdir -p "$HOME/.local/share/applications"
+cat > "$HOME/.local/share/applications/opt.mgba.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=mGBA
+Categories=Game;Emulator;
+Keywords=nintendo;gba,gbc;emulator;
+StartupNotify=true
+Terminal=false
+Exec=$binDir/mgba %f
+Icon=mgba
+#Icon=$installDir/usr/local/share/icons/hicolor/512x512/apps/mgba.png
+MimeType=application/x-gameboy-advance-rom;application/x-agb-rom;application/x-gba-rom;
+EOF
 
 infoMsg 'Removing temp files...'
 rm -rf "$tmpDir"

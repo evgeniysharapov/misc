@@ -14,7 +14,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/firefox"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/firefox.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/firefox.XXXXXXXX)
 pkgUrl='https://download.mozilla.org/?lang=en-US&os=linux64&product=firefox-latest'
 
 # Load helpers
@@ -68,8 +68,8 @@ X-MultipleArgs=false
 StartupNotify=true
 StartupWMClass=firefox
 Exec=$binDir/firefox %u
-#Icon=$installDir/browser/icons/mozicon128.png
 Icon=firefox
+#Icon=$installDir/browser/icons/mozicon128.png
 MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;x-scheme-handler/chrome;video/webm;application/x-xpinstall;
 Actions=NewWindow;NewPrivateWindow;
 

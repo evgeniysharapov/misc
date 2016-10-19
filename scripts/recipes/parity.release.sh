@@ -14,7 +14,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/parity"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/parity.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/parity.XXXXXXXX)
 pkgUrl='https://github.com'$(
 	curl -sL 'https://github.com/ethcore/parity/releases/latest' | \
 	egrep -o '/ethcore/parity/releases/download/[^>]+/parity_.+\_amd64\.deb' | \

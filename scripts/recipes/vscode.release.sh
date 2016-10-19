@@ -18,7 +18,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/vscode"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/vscode.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/vscode.XXXXXXXX)
 pkgUrl='http://go.microsoft.com/fwlink/?LinkID=620884'
 
 # Load helpers
@@ -69,7 +69,8 @@ Keywords=code;vscode;
 StartupNotify=true
 Terminal=false
 Exec=$binDir/vscode
-Icon=$installDir/resources/app/resources/linux/code.png
+Icon=visual-studio-code
+#Icon=$installDir/resources/app/resources/linux/code.png
 MimeType=text/plain;
 EOF
 

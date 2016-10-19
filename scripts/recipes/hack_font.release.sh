@@ -11,7 +11,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 installDir='/usr/share/fonts/opentype/Hack'
-tmpDir=$(mktemp /tmp/hack-font.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/hack-font.XXXXXXXX)
 pkgUrl='https://github.com'$(
 	curl -sL 'https://github.com/chrissimpkins/Hack/releases/latest' | \
 	egrep -o '/chrissimpkins/Hack/releases/download/[^>]+/Hack-.+-otf\.tar\.gz' | \

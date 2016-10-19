@@ -29,7 +29,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/keepassx"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/keepassx.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/keepassx.XXXXXXXX)
 pkgUrl='https://github.com'$(
 	curl -sL 'https://github.com/keepassx/keepassx/releases' | \
 	egrep -o '/keepassx/keepassx/archive/[^>]+\.tar\.gz' | \
@@ -98,8 +98,8 @@ Keywords=password;
 StartupNotify=true
 Terminal=false
 Exec=$binDir/keepassx %f
-#Icon=$installDir/usr/local/share/icons/hicolor/scalable/apps/keepassx.svgz
 Icon=keepassx
+#Icon=$installDir/usr/local/share/icons/hicolor/scalable/apps/keepassx.svgz
 MimeType=application/x-keepass2;
 EOF
 

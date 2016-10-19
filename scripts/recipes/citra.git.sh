@@ -25,7 +25,7 @@ binDir="$HOME/.opt/bin"
 baseDir="$HOME/.opt/software/citra"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp /tmp/citra.XXXXXXXX)
+tmpDir=$(mktemp -d /tmp/citra.XXXXXXXX)
 #gitUrl='https://github.com/citra-emu/citra'
 gitUrl='https://github.com/citra-emu/citra-bleeding-edge'
 
@@ -89,9 +89,9 @@ cat > "$HOME/.local/share/applications/opt.citra.desktop" <<EOF
 Type=Application
 Name=Citra
 Categories=Game;Emulator;
-Keywords=nintendo;3ds;emulator
+Keywords=nintendo;3ds;emulator;
 StartupNotify=true
-Terminal=false
+Terminal=true
 Exec=$binDir/citra %f
 #Icon=citra
 Icon=$installDir/citra.svg
