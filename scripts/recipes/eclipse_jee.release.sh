@@ -64,7 +64,9 @@ export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
 cd "$installDir"
 
-./eclipse "\$@"
+./eclipse \\
+	--launcher.GTK_version 2 \\
+	"\$@"
 EOF
 
 ln -fs "$installDir"/eclipse-jee-wrapper.sh "$binDir"/eclipse-jee
