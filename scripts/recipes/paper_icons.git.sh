@@ -30,6 +30,11 @@ cd "$tmpDir"
 infoMsg 'Downloading package...'
 wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
 
+infoMsg 'Building...'
+
+sed -i 's|^\(Inherits=\).*|\1elementary,Adwaita,gnome,hicolor|g' \
+	./Paper/index.theme
+
 infoMsg 'Installing...'
 sudo rm -rf "$installDir"
 sudo mkdir -p "$installDir"

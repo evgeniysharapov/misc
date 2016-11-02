@@ -16,13 +16,13 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-baseDir="$HOME/.opt/software/android-studio"
+baseDir="$HOME/.opt/software/android"
 homeDir="$baseDir/home"
-installDir="$baseDir/install"
+installDir="$baseDir/install/studio"
 tmpDir=$(mktemp -d /tmp/android-studio.XXXXXXXX)
 pkgUrl=$(
-	curl -sL 'https://developer.android.com/sdk/index.html' | \
-	egrep -o 'https://dl\.google\.com/[^>]+/android-studio-ide-.+-linux\.zip' | \
+	curl -sL 'https://developer.android.com/studio/index.html' | \
+	egrep -o 'https://dl\.google\.com/[^>]+/android-studio-ide-[^>]+-linux\.zip' | \
 	head -1
 )
 
@@ -61,6 +61,8 @@ export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
 export STUDIO_VM_OPTIONS="$installDir/bin/custom.vmoptions"
+export ANDROID_HOME="$baseDir/install/sdk"
+export PATH=\${PATH}:\$ANDROID_HOME/tools:\$ANDROID_HOME/platform-tools
 cd "$installDir"
 
 ./bin/studio.sh "\$@"

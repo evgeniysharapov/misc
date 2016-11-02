@@ -38,12 +38,8 @@ infoMsg 'Downloading package...'
 wget "$pkgUrl" --show-progress -qO - | tar -xJ --strip-components=1
 
 infoMsg 'Installing...'
-rm -rf "$installDir" "$baseDir/tmp"
-mkdir -p "$binDir" "$homeDir" "$installDir" "$baseDir/tmp"
-
-ESCAPED_homeDir=$(echo "$homeDir" | sed -e 's/\\/\\\\/g;s/\//\\\//g;s/&/\\&/g')
-find "$tmpDir"/src -name '*.js' -type f -print0 | \
-	xargs -0 sed -i "s/gui\.App\.dataPath/'$ESCAPED_homeDir'/g"
+rm -rf "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"
 
 mv "$tmpDir"/* "$installDir"
 
@@ -54,12 +50,9 @@ export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-export TMPDIR="$baseDir/tmp"
 cd "$installDir"
 
 ./Popcorn-Time "\$@"
-
-rm -rf "$baseDir/tmp"/*
 EOF
 
 ln -fs "$installDir"/popcorntime-wrapper.sh "$binDir"/popcorntime
