@@ -83,6 +83,7 @@ Keywords=eclipse;ide;
 StartupNotify=true
 Terminal=false
 Exec=$binDir/eclipse-jee %f
+StartupWMClass=Eclipse
 Icon=eclipse
 #Icon=$installDir/eclipse.xpm
 EOF
