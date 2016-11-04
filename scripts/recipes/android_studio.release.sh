@@ -63,9 +63,8 @@ export XDG_DATA_HOME="$homeDir/.local/share"
 export STUDIO_VM_OPTIONS="$installDir/bin/custom.vmoptions"
 export ANDROID_HOME="$baseDir/install/sdk"
 export PATH=\${PATH}:\$ANDROID_HOME/tools:\$ANDROID_HOME/platform-tools
-cd "$installDir"
 
-./bin/studio.sh "\$@"
+"$installDir"/bin/studio.sh "\$@"
 EOF
 
 ln -fs "$installDir"/android-studio-wrapper.sh "$binDir"/android-studio

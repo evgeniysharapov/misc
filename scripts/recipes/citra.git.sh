@@ -75,9 +75,8 @@ export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-cd "$installDir"
 
-./citra-qt "\$@"
+"$installDir"/citra-qt "\$@"
 EOF
 
 ln -fs "$installDir"/citra-wrapper.sh "$binDir"/citra

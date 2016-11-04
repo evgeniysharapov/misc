@@ -5,9 +5,7 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 # Dependencies:
-#  python
-#  python-gevent
-#  python-msgpack
+#  docker
 #
 
 # Exit on errors
@@ -38,36 +36,81 @@ cd "$tmpDir"
 infoMsg 'Downloading package...'
 wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
 
+infoMsg 'Building Docker image...'
+cat > ./Dockerfile <<EOF
+FROM ubuntu:latest
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# Install packages
+RUN \\
+	apt-get update -y; \\
+	apt-get install -y python python-gevent python-msgpack tor; \\
+	apt-get clean; \\
+	rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
+
+# Create ZeroNet user
+RUN addgroup \\
+	--gid $(id -g $(whoami)) \\
+	zeronet
+RUN adduser \\
+	--home /home/zeronet \\
+	--uid $(id -u $(whoami)) \\
+	--ingroup zeronet \\
+	--disabled-password \\
+	--gecos '' \\
+	zeronet
+WORKDIR /home/zeronet
+
+# Add ZeroNet source
+ADD . /home/zeronet
+VOLUME /home/zeronet/data
+
+# Configure tor
+RUN \\
+	echo "RunAsDaemon 1" >> .torrc; \\
+	echo "ControlPort 9051" >> .torrc; \\
+	echo "CookieAuthentication 1" >> .torrc
+
+# Set ZeroNet user permissions
+RUN chown -R zeronet:zeronet /home/zeronet
+
+# Set upstart command
+CMD \\
+	tor -f .torrc; \\
+	python zeronet.py \\
+		--fileserver_ip 0.0.0.0 \\
+		--fileserver_port 15441 \\
+		--ui_ip 0.0.0.0 \\
+		--ui_port 43110 \\
+		--tor enable
+
+# Expose ports
+EXPOSE 15441
+EXPOSE 43110
+EOF
+
+docker build --rm --tag zeronet .
+
 infoMsg 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
 mv "$tmpDir"/* "$installDir"
 
-cat > "$installDir"/torrc <<EOF
-# usermod -aG debian-tor $USER
-ControlPort 9051
-CookieAuthentication 1
-EOF
-
 cat > "$installDir"/zeronet-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-export HOME="$homeDir"
-export XDG_CONFIG_HOME="$homeDir/.config"
-export XDG_CACHE_HOME="$homeDir/.cache"
-export XDG_DATA_HOME="$homeDir/.local/share"
-cd "$installDir"
-
-if type tor > /dev/null && ! pidof tor > /dev/null; then
-	tor -f torrc &
-fi
-
-python zeronet.py \\
-	--config_file "$homeDir"/zeronet.conf \\
-	--data_dir "$homeDir"/data \\
-	--log_dir "$homeDir"/log \\
-	"\$@"
+docker run \\
+	--name zeronet \\
+	--publish 127.0.0.1:15441:15441 \\
+	--publish 127.0.0.1:43110:43110 \\
+	--volume "$homeDir":/home/zeronet/data \\
+	--user zeronet \\
+	--interactive \\
+	--tty \\
+	--rm \\
+	zeronet
 EOF
 
 ln -fs "$installDir"/zeronet-wrapper.sh "$binDir"/zeronet

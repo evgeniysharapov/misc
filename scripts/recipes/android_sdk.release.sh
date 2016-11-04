@@ -52,9 +52,8 @@ export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
 export ANDROID_HOME="$installDir"
 export PATH=\${PATH}:\$ANDROID_HOME/tools:\$ANDROID_HOME/platform-tools
-cd "$installDir"
 
-patch ./tools/android -so ./tools/android.patched <<'PATCH'
+patch "$installDir"/tools/android -so "$installDir"/tools/android.patched <<'PATCH'
 --- tools/android
 +++ tools/android
 @@ -110 +110 @@
@@ -62,8 +61,8 @@ patch ./tools/android -so ./tools/android.patched <<'PATCH'
 +exec "\$java_cmd" -Duser.home='$homeDir' \\
 PATCH
 
-if ! cmp -s ./tools/android ./tools/android.patched ; then
-	sh ./tools/android.patched "\$@"
+if ! cmp -s "$installDir"/tools/android "$installDir"/tools/android.patched ; then
+	sh "$installDir"/tools/android.patched "\$@"
 fi
 EOF
 
@@ -77,9 +76,8 @@ export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-cd "$installDir"
 
-./platform-tools/adb "\$@"
+"$installDir"/platform-tools/adb "\$@"
 EOF
 
 ln -fs "$installDir"/adb-wrapper.sh "$binDir"/adb
@@ -92,9 +90,8 @@ export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-cd "$installDir"
 
-./platform-tools/fastboot "\$@"
+"$installDir"/platform-tools/fastboot "\$@"
 EOF
 
 ln -fs "$installDir"/fastboot-wrapper.sh "$binDir"/fastboot
@@ -107,9 +104,8 @@ export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-cd "$installDir"
 
-./build-tools/"\$(ls -v ./build-tools | tail -1)"/apksigner "\$@"
+"$installDir"/build-tools/"\$(ls -v "$installDir"/build-tools | tail -1)"/apksigner "\$@"
 EOF
 
 ln -fs "$installDir"/apksigner-wrapper.sh "$binDir"/apksigner
@@ -122,9 +118,8 @@ export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-cd "$installDir"
 
-./build-tools/"\$(ls -v ./build-tools | tail -1)"/zipalign "\$@"
+"$installDir"/build-tools/"\$(ls -v "$installDir"/build-tools | tail -1)"/zipalign "\$@"
 EOF
 
 ln -fs "$installDir"/zipalign-wrapper.sh "$binDir"/zipalign

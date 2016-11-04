@@ -74,9 +74,9 @@ export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-cd "$installDir"
+export LD_LIBRARY_PATH="$installDir/lib"
 
-./bin/mgba-qt "\$@"
+"$installDir"/bin/mgba-qt "\$@"
 EOF
 
 ln -fs "$installDir"/mgba-wrapper.sh "$binDir"/mgba

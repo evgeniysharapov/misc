@@ -162,23 +162,23 @@ make install
 cat > "$installDir"/ffmpeg-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-cd "$installDir"
+export LD_LIBRARY_PATH="$installDir/lib"
 
-./bin/ffmpeg "\$@"
+"$installDir"/bin/ffmpeg "\$@"
 EOF
 cat > "$installDir"/ffprobe-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-cd "$installDir"
+export LD_LIBRARY_PATH="$installDir/lib"
 
-./bin/ffprobe "\$@"
+"$installDir"/bin/ffprobe "\$@"
 EOF
 cat > "$installDir"/ffserver-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
-cd "$installDir"
+export LD_LIBRARY_PATH="$installDir/lib"
 
-./bin/ffserver "\$@"
+"$installDir"/bin/ffserver "\$@"
 EOF
 
 ln -fs "$installDir"/ffmpeg-wrapper.sh "$binDir"/ffmpeg

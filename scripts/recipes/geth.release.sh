@@ -59,11 +59,8 @@ export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-cd "$installDir"
 
-./geth \\
-	--support-dao-fork \\
-	"\$@"
+"$installDir"/geth "\$@"
 EOF
 
 ln -fs "$installDir"/geth-wrapper.sh "$binDir"/geth
