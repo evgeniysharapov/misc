@@ -96,8 +96,6 @@ infoMsg 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
-mv "$tmpDir"/* "$installDir"
-
 cat > "$installDir"/zeronet-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
