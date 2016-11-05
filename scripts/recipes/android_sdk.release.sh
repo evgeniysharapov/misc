@@ -66,9 +66,6 @@ if ! cmp -s "$installDir"/tools/android "$installDir"/tools/android.patched ; th
 fi
 EOF
 
-ln -fs "$installDir"/android-wrapper.sh "$binDir"/android
-chmod 755 "$binDir"/android
-
 cat > "$installDir"/adb-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
@@ -79,9 +76,6 @@ export XDG_DATA_HOME="$homeDir/.local/share"
 
 "$installDir"/platform-tools/adb "\$@"
 EOF
-
-ln -fs "$installDir"/adb-wrapper.sh "$binDir"/adb
-chmod 755 "$binDir"/adb
 
 cat > "$installDir"/fastboot-wrapper.sh <<EOF
 #!/usr/bin/env bash
@@ -94,9 +88,6 @@ export XDG_DATA_HOME="$homeDir/.local/share"
 "$installDir"/platform-tools/fastboot "\$@"
 EOF
 
-ln -fs "$installDir"/fastboot-wrapper.sh "$binDir"/fastboot
-chmod 755 "$binDir"/fastboot
-
 cat > "$installDir"/apksigner-wrapper.sh <<EOF
 #!/usr/bin/env bash
 
@@ -107,9 +98,6 @@ export XDG_DATA_HOME="$homeDir/.local/share"
 
 "$installDir"/build-tools/"\$(ls -v "$installDir"/build-tools | tail -1)"/apksigner "\$@"
 EOF
-
-ln -fs "$installDir"/apksigner-wrapper.sh "$binDir"/apksigner
-chmod 755 "$binDir"/apksigner
 
 cat > "$installDir"/zipalign-wrapper.sh <<EOF
 #!/usr/bin/env bash
@@ -122,8 +110,12 @@ export XDG_DATA_HOME="$homeDir/.local/share"
 "$installDir"/build-tools/"\$(ls -v "$installDir"/build-tools | tail -1)"/zipalign "\$@"
 EOF
 
+ln -fs "$installDir"/android-wrapper.sh "$binDir"/android
+ln -fs "$installDir"/adb-wrapper.sh "$binDir"/adb
+ln -fs "$installDir"/fastboot-wrapper.sh "$binDir"/fastboot
+ln -fs "$installDir"/apksigner-wrapper.sh "$binDir"/apksigner
 ln -fs "$installDir"/zipalign-wrapper.sh "$binDir"/zipalign
-chmod 755 "$binDir"/zipalign
+chmod 755 "$binDir"/{android,adb,fastboot,apksigner,zipalign}
 
 infoMsg 'Creating launcher...'
 mkdir -p "$HOME/.local/share/applications"
