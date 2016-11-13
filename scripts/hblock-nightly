@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Author:     Héctor Molinero Fernández <hector@molinero.xyz>
+# Repository: https://github.com/zant95/misc
+# License:    MIT, https://opensource.org/licenses/MIT
+#
+
+tee="$(which tee)"
+
+if [ $(id -u) -ne 0 ]; then
+	tee="$(which sudo) $tee"
+fi
+
+curl -s 'https://hblock.molinero.xyz/hosts.gz' | gunzip -c | \
+	sed "/^127.0.0.1[[:space:]]\{1,\}localhost/ s/$/ $(uname -n)/" | \
+	$tee /etc/hosts | head -4
+

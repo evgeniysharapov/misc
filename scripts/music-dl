@@ -15,8 +15,8 @@ set -euo pipefail
 
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
-tmpDir="/tmp/music-dl"
-outDir="$HOME/Downloads/Music-DL"
+tmpDir=$(mktemp -d /tmp/music-dl.XXXXXXXX)
+outDir="$HOME/Downloads"
 ffmpegLoc=$(
 	[ -f "$HOME/.opt/bin/ffmpeg" ] \
 		&& echo "$HOME/.opt/bin/ffmpeg" || echo $(which ffmpeg)
@@ -30,8 +30,6 @@ else
 fi
 
 # Process
-infoMsg 'Preparing workspace...'
-rm -rf "$tmpDir"
 mkdir -p "$tmpDir"/{before,after}
 cd "$tmpDir"
 

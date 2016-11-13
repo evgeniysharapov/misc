@@ -11,7 +11,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-baseDir="$HOME/.opt/software/popcorntime"
+baseDir="$HOME/.opt/popcorntime"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/popcorntime.XXXXXXXX)
@@ -29,9 +29,6 @@ else
 fi
 
 # Process
-infoMsg 'Preparing workspace...'
-rm -rf "$tmpDir"
-mkdir "$tmpDir"
 cd "$tmpDir"
 
 infoMsg 'Downloading package...'
@@ -65,6 +62,7 @@ Name=Popcorn Time
 Categories=AudioVideo;Video;Network;Player;P2P;
 Keywords=popcorn;tv;show;movie;
 StartupNotify=true
+StartupWMClass=crx_hecfofbbdfadifpemejbbdcjmfmboohj
 Terminal=false
 Exec=$binDir/popcorntime %u
 Icon=popcorntime

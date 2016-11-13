@@ -28,9 +28,6 @@ else
 fi
 
 # Process
-infoMsg 'Preparing workspace...'
-rm -rf "$tmpDir"
-mkdir "$tmpDir"
 cd "$tmpDir"
 
 infoMsg 'Downloading package...'

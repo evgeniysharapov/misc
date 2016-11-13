@@ -11,7 +11,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-baseDir="$HOME/.opt/software/webtorrent"
+baseDir="$HOME/.opt/webtorrent"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/webtorrent.XXXXXXXX)
@@ -29,9 +29,6 @@ else
 fi
 
 # Process
-infoMsg 'Preparing workspace...'
-rm -rf "$tmpDir"
-mkdir "$tmpDir"
 cd "$tmpDir"
 
 infoMsg 'Downloading package...'

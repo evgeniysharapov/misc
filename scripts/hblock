@@ -5,4 +5,6 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 
-curl -sL 'https://github.com/zant95/hBlock/raw/master/hblock' | tac | tac | sh -s - "$@"
+curl -sL 'https://raw.githubusercontent.com/zant95/hblock/master/hblock' |\
+	tac | tac | sh -s - "$@"
+

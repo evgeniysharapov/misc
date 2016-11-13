@@ -16,7 +16,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-baseDir="$HOME/.opt/software/geth"
+baseDir="$HOME/.opt/geth"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/geth.XXXXXXXX)
@@ -34,9 +34,6 @@ else
 fi
 
 # Process
-infoMsg 'Preparing workspace...'
-rm -rf "$tmpDir"
-mkdir "$tmpDir"
 cd "$tmpDir"
 
 infoMsg 'Downloading package...'

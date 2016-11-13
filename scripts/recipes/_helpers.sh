@@ -3,6 +3,7 @@
 # Author:     Héctor Molinero Fernández <hector@molinero.xyz>
 # Repository: https://github.com/zant95/misc
 # License:    MIT, https://opensource.org/licenses/MIT
+#
 
 # Exit on errors
 set -eu

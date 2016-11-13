@@ -92,7 +92,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-baseDir="$HOME/.opt/software/ffmpeg"
+baseDir="$HOME/.opt/ffmpeg"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/ffmpeg.XXXXXXXX)
 pkgUrl='https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2'
@@ -105,9 +105,6 @@ else
 fi
 
 # Process
-infoMsg 'Preparing workspace...'
-rm -rf "$tmpDir"
-mkdir -p "$tmpDir"
 cd "$tmpDir"
 
 infoMsg 'Downloading package...'
@@ -214,7 +211,9 @@ cat > "$installDir"/ffmpeg-wrapper.sh <<EOF
 
 export LD_LIBRARY_PATH="$installDir/lib"
 
-"$installDir"/bin/ffmpeg "\$@"
+"$installDir"/bin/ffmpeg \\
+	-hide_banner \\
+	"\$@"
 EOF
 
 cat > "$installDir"/ffplay-wrapper.sh <<EOF
@@ -222,7 +221,9 @@ cat > "$installDir"/ffplay-wrapper.sh <<EOF
 
 export LD_LIBRARY_PATH="$installDir/lib"
 
-"$installDir"/bin/ffplay "\$@"
+"$installDir"/bin/ffplay \\
+	-hide_banner \\
+	"\$@"
 EOF
 
 cat > "$installDir"/ffprobe-wrapper.sh <<EOF
@@ -230,7 +231,9 @@ cat > "$installDir"/ffprobe-wrapper.sh <<EOF
 
 export LD_LIBRARY_PATH="$installDir/lib"
 
-"$installDir"/bin/ffprobe "\$@"
+"$installDir"/bin/ffprobe \\
+	-hide_banner \\
+	"\$@"
 EOF
 
 cat > "$installDir"/ffserver-wrapper.sh <<EOF
@@ -238,7 +241,9 @@ cat > "$installDir"/ffserver-wrapper.sh <<EOF
 
 export LD_LIBRARY_PATH="$installDir/lib"
 
-"$installDir"/bin/ffserver "\$@"
+"$installDir"/bin/ffserver \\
+	-hide_banner \\
+	"\$@"
 EOF
 
 ln -fs "$installDir"/ffmpeg-wrapper.sh "$binDir"/ffmpeg

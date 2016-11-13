@@ -11,7 +11,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-baseDir="$HOME/.opt/software/firefox-aurora"
+baseDir="$HOME/.opt/firefox-aurora"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/firefox-aurora.XXXXXXXX)
@@ -25,9 +25,6 @@ else
 fi
 
 # Process
-infoMsg 'Preparing workspace...'
-rm -rf "$tmpDir"
-mkdir -p "$tmpDir"
 cd "$tmpDir"
 
 infoMsg 'Downloading package...'

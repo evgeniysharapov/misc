@@ -16,7 +16,7 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-baseDir="$HOME/.opt/software/android"
+baseDir="$HOME/.opt/android"
 homeDir="$baseDir/home"
 installDir="$baseDir/install/studio"
 tmpDir=$(mktemp -d /tmp/android-studio.XXXXXXXX)
@@ -34,9 +34,6 @@ else
 fi
 
 # Process
-infoMsg 'Preparing workspace...'
-rm -rf "$tmpDir"
-mkdir "$tmpDir"
 cd "$tmpDir"
 
 infoMsg 'Downloading package...'
@@ -79,12 +76,12 @@ Name=Android Studio
 Categories=Development;IDE;
 Keywords=android;studio;ide;
 StartupNotify=true
+StartupWMClass=jetbrains-studio
 Terminal=false
 Exec=$binDir/android-studio %f
 Icon=android-sdk
 #Icon=$installDir/bin/studio.png
 MimeType=application/x-extension-iml;
-StartupWMClass=jetbrains-studio
 EOF
 
 infoMsg 'Removing temp files...'
