@@ -13,5 +13,5 @@ fi
 
 curl -s 'https://hblock.molinero.xyz/hosts.gz' | gunzip -c | \
 	sed "/^127.0.0.1[[:space:]]\{1,\}localhost/ s/$/ $(uname -n)/" | \
-	$tee /etc/hosts | head -4
+	$tee /etc/hosts >/dev/null
 
