@@ -5,8 +5,12 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 
+printf -- '%s\t%s\t%s\n' 'Top' 'Domains' 'TLD'
+
 cat /etc/hosts | \
 	sed -n '/<blocklist>/,/<\/blocklist>/p' | \
 	sed -n 's/.\{1,\}\.\(.\{1,\}\)$/\1/p' | \
-	sort | uniq -c | sort -rn | nl -s.
+	sort | uniq -c | sort -rn | \
+	awk '{print NR,$0}' | \
+	tr -s ' ' '\t'
 
