@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Author:     Héctor Molinero Fernández <hector@molinero.xyz>
+# Repository: https://github.com/zant95/misc
+# License:    MIT, https://opensource.org/licenses/MIT
+#
+
+cat /etc/hosts | \
+	sed -n '/<blocklist>/,/<\/blocklist>/p' | \
+	sed -n 's/.\{1,\}\.\(.\{1,\}\)$/\1/p' | \
+	sort | uniq -c | sort -rn | nl -s.
+
