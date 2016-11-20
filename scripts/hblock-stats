@@ -5,9 +5,17 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 
-printf -- '%s\t%s\t%s\n' 'Top' 'Domains' 'TLD'
+if [ $# -eq 0 ]; then
+	hosts=$(cat /etc/hosts)
+elif [ -f "$1" ] && [ -r "$1" ]; then
+	hosts=$(cat "$1")
+else
+	>&2 printf -- '%s\n' "Cannot read file '$1'"
+	exit 1
+fi
 
-cat /etc/hosts | \
+printf -- '%s\t%s\t%s\n' 'Top' 'Domains' 'TLD'
+printf -- '%s' "$hosts" | \
 	sed -n '/<blocklist>/,/<\/blocklist>/p' | \
 	sed -n 's/.\{1,\}\.\(.\{1,\}\)$/\1/p' | \
 	sort | uniq -c | sort -rn | \
