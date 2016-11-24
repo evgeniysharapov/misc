@@ -490,6 +490,7 @@ doConfigure \
 	--enable-libfdk-aac \
 	--enable-libfreetype \
 	--enable-libmp3lame \
+	--enable-libopus \
 	--enable-libtheora \
 	--enable-libvorbis \
 	--enable-libvpx \

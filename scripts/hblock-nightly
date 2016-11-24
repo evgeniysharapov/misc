@@ -16,5 +16,5 @@ curl -s 'https://hblock.molinero.xyz/hosts.gz' | gunzip -c | \
 	$tee /etc/hosts >/dev/null
 
 head -4 /etc/hosts
-curl -s 'https://hblock.molinero.xyz/stats.txt' | head -21
+curl -s 'https://hblock.molinero.xyz/most_abused_suffixes.txt' | head -21
 
