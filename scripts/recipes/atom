@@ -22,67 +22,54 @@ tmpDir=$(mktemp -d /tmp/atom.XXXXXXXX)
 pkgUrl='https://atom.io/download/deb'
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Downloading package...'
+downloadExtractAndCd "$pkgUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO 'atom.deb'
-
-infoMsg 'Installing...'
+printAction 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
-ar p 'atom.deb' 'data.tar.gz' | tar -xzC "$installDir"
+mv "$tmpDir"/* "$installDir"
 
-cat > "$installDir"/atom-wrapper.sh <<EOF
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'atom' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-
-"$installDir"/usr/bin/atom \\
-	--safe \\
-	"\$@"
+"$installDir"/usr/bin/atom "\$@"
 EOF
-cat > "$installDir"/apm-wrapper.sh <<EOF
+)"
+createWrapper "$installDir" "$binDir" 'apm' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-
 "$installDir"/usr/bin/apm "\$@"
 EOF
+)"
 
-ln -fs "$installDir"/atom-wrapper.sh "$binDir"/atom
-ln -fs "$installDir"/apm-wrapper.sh "$binDir"/apm
-chmod 755 "$binDir"/{apm,atom}
-
-infoMsg 'Creating launcher...'
-mkdir -p "$HOME"/.local/share/applications
-cat > "$HOME"/.local/share/applications/opt.atom.desktop <<EOF
+printAction 'Creating launchers...'
+createLauncher "$installDir" 'atom' "$(cat <<-EOF
 [Desktop Entry]
+Version=1.0
 Type=Application
 Name=Atom
 Categories=Development;IDE;TextEditor;Utility;
 Keywords=atom;code;
 StartupNotify=true
 Terminal=false
-Exec=$binDir/atom %U
+Exec=$binDir/atom %F
 Icon=atom
-#Icon=$installDir/usr/share/pixmaps/atom.png
 MimeType=text/plain;
 EOF
+)"
 
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

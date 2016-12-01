@@ -11,75 +11,65 @@ set -euo pipefail
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
 binDir="$HOME/.opt/bin"
-baseDir="$HOME/.opt/firefox"
+baseDir="$HOME/.opt/firefox-nightly"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
-tmpDir=$(mktemp -d /tmp/firefox.XXXXXXXX)
-pkgUrl='https://download.mozilla.org/?lang=en-US&os=linux64&product=firefox-latest'
+tmpDir=$(mktemp -d /tmp/firefox-nightly.XXXXXXXX)
+pkgUrl='https://download.mozilla.org/?lang=en-US&os=linux64&product=firefox-nightly-latest'
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Downloading package...'
+downloadExtractAndCd "$pkgUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO - | tar -xj --strip-components=1
-
-infoMsg 'Installing...'
+printAction 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
 mv "$tmpDir"/* "$installDir"
 
-cat > "$installDir"/firefox-wrapper.sh <<EOF
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'firefox-nightly' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-
 "$installDir"/firefox "\$@"
 EOF
+)"
 
-ln -fs "$installDir"/firefox-wrapper.sh "$binDir"/firefox
-chmod 755 "$binDir"/firefox
-
-infoMsg 'Creating launcher...'
-mkdir -p "$HOME"/.local/share/applications
-cat > "$HOME"/.local/share/applications/opt.firefox.desktop <<EOF
+printAction 'Creating launchers...'
+createLauncher "$installDir" 'firefox-nightly' "$(cat <<-EOF
 [Desktop Entry]
+Version=1.0
 Type=Application
-Name=Mozilla Firefox
-GenericName=Web Browser
+Name=Mozilla Firefox Nightly
 Categories=Network;WebBrowser;
 Keywords=Internet;WWW;Browser;Web;Explorer;
 Terminal=false
-X-MultipleArgs=false
 StartupNotify=true
-#StartupWMClass=firefox
-Exec=$binDir/firefox %u
-Icon=firefox
-#Icon=$installDir/browser/icons/mozicon128.png
+Exec=$binDir/firefox-nightly %u
+Icon=firefox-nightly
 MimeType=text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;x-scheme-handler/chrome;video/webm;application/x-xpinstall;
-Actions=NewWindow;NewPrivateWindow;
+Actions=NewTab;NewWindow;NewPrivateWindow;
+
+[Desktop Action NewTab]
+Name=Open new tab
+Exec=$binDir/firefox-nightly -new-tab about:newtab
 
 [Desktop Action NewWindow]
-Name=Open a New Window
-OnlyShowIn=Unity;
-Exec=$binDir/firefox -new-window
+Name=Open new window
+Exec=$binDir/firefox-nightly -new-window
 
 [Desktop Action NewPrivateWindow]
-Name=Open a New Private Window
-OnlyShowIn=Unity;
-Exec=$binDir/firefox -private-window
+Name=Open new private window
+Exec=$binDir/firefox-nightly -private-window
 EOF
+)"
 
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

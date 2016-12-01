@@ -4,6 +4,9 @@
 # Repository: https://github.com/zant95/misc
 # License:    MIT, https://opensource.org/licenses/MIT
 #
+# Dependencies:
+#  curl
+#
 
 # Exit on errors
 set -euo pipefail
@@ -15,45 +18,36 @@ baseDir="$HOME/.opt/parity"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/parity.XXXXXXXX)
-pkgUrl='https://github.com'$(
+pkgUrl=$(
 	curl -sL 'https://github.com/ethcore/parity/releases/latest' | \
-	egrep -o '/ethcore/parity/releases/download/[^>]+/parity_.+\_amd64\.deb' | \
+	egrep -o 'https?://[a-z0-9]+\.cloudfront\.net/v[0-9.]+/x86_64-unknown-linux-gnu/parity_[0-9.]+_amd64\.deb' | \
 	head -1
 )
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Downloading package...'
+downloadExtractAndCd "$pkgUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO 'parity.deb'
-
-infoMsg 'Installing...'
+printAction 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
-ar p 'parity.deb' 'data.tar.xz' | tar -xJC "$installDir"
+mv "$tmpDir"/* "$installDir"
 
-cat > "$installDir"/parity-wrapper.sh <<EOF
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'parity' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-
 "$installDir"/usr/bin/parity "\$@"
 EOF
+)"
 
-ln -fs "$installDir"/parity-wrapper.sh "$binDir"/parity
-chmod 755 "$binDir"/parity
-
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

@@ -8,11 +8,8 @@
 #  build-essential
 #  cmake
 #  git
-#  libboost-dev
-#  libpthread-stubs0-dev
 #  libqt5opengl5-dev
 #  libsdl2-dev
-#  libxkbcommon-x11-dev
 #  qtbase5-dev
 #
 
@@ -26,30 +23,23 @@ baseDir="$HOME/.opt/citra"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/citra.XXXXXXXX)
-#gitUrl='https://github.com/citra-emu/citra'
-gitUrl='https://github.com/citra-emu/citra-bleeding-edge'
+gitUrl='https://github.com/citra-emu/citra.git'
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Cloning remote repository...'
+doGitCloneAndCd "$gitUrl" "$tmpDir"
 
-infoMsg 'Cloning remote repository...'
-git clone --recursive "$gitUrl" .
+printAction 'Building...'
+doCmake \
+	-D CMAKE_INSTALL_PREFIX="$installDir" \
+	-D CMAKE_CXX_FLAGS="-O2 -std=gnu++14 -march=native" \
+	-D CMAKE_BUILD_TYPE=Release
+doMake
 
-infoMsg 'Building...'
-mkdir build && cd build
-cmake .. \
-	-DCMAKE_CXX_FLAGS="-O2 -std=gnu++14 -march=native" \
-	-DCMAKE_BUILD_TYPE=Release
-make -j $(nproc)
-
-infoMsg 'Installing...'
+printAction 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
@@ -59,41 +49,49 @@ mv -t "$installDir" \
 
 if [ ! -f "$homeDir"/.config/citra-emu/qt-config.ini ]; then
 	mkdir -p "$homeDir"/.config/citra-emu
-	cat > "$homeDir"/.config/citra-emu/qt-config.ini <<-EOF
+	cat > "$homeDir"/.config/citra-emu/qt-config.ini <<-'EOF'
 	[System]
 	region_value=2
 	EOF
 fi
 
-cat > "$installDir"/citra-wrapper.sh <<EOF
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'citra' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-
+"$installDir"/citra "\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'citra-qt' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
 "$installDir"/citra-qt "\$@"
 EOF
+)"
 
-ln -fs "$installDir"/citra-wrapper.sh "$binDir"/citra
-chmod 755 "$binDir"/citra
-
-infoMsg 'Creating launcher...'
-cat > "$HOME/.local/share/applications/opt.citra.desktop" <<EOF
+printAction 'Creating launchers...'
+createLauncher "$installDir" 'citra' "$(cat <<-EOF
 [Desktop Entry]
+Version=1.0
 Type=Application
 Name=Citra
 Categories=Game;Emulator;
 Keywords=nintendo;3ds;emulator;
 StartupNotify=true
 Terminal=true
-Exec=$binDir/citra %f
+Exec=$binDir/citra-qt %f
 #Icon=citra
 Icon=$installDir/citra.svg
 MimeType=application/x-ctr-3dsx;application/x-ctr-cci;application/x-ctr-cia;application/x-ctr-cxi;
 EOF
+)"
 
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

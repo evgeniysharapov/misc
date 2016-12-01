@@ -4,6 +4,9 @@
 # Repository: https://github.com/zant95/misc
 # License:    MIT, https://opensource.org/licenses/MIT
 #
+# Dependencies:
+#  curl
+#
 
 # Exit on errors
 set -euo pipefail
@@ -22,41 +25,33 @@ pkgUrl=$(
 )
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Downloading package...'
+downloadExtractAndCd "$pkgUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO - | tar -xJ --strip-components=1
-
-infoMsg 'Installing...'
+printAction 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
 mv "$tmpDir"/* "$installDir"
 
-cat > "$installDir"/popcorntime-wrapper.sh <<EOF
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'popcorntime' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-
 "$installDir"/Popcorn-Time "\$@"
 EOF
+)"
 
-ln -fs "$installDir"/popcorntime-wrapper.sh "$binDir"/popcorntime
-chmod 755 "$binDir"/popcorntime
-
-infoMsg 'Creating launcher...'
-cat > "$HOME/.local/share/applications/opt.popcorntime.desktop" <<EOF
+printAction 'Creating launchers...'
+createLauncher "$installDir" 'popcorntime' "$(cat <<-EOF
 [Desktop Entry]
+Version=1.0
 Type=Application
 Name=Popcorn Time
 Categories=AudioVideo;Video;Network;Player;P2P;
@@ -66,10 +61,10 @@ StartupWMClass=crx_hecfofbbdfadifpemejbbdcjmfmboohj
 Terminal=false
 Exec=$binDir/popcorntime %u
 Icon=popcorntime
-#Icon=$installDir/src/app/images/icon.png
 MimeType=application/x-bittorrent;x-scheme-handler/magnet;
 EOF
+)"
 
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

@@ -5,9 +5,9 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 # Dependencies:
-#  autoconf
 #  automake
 #  build-essential
+#  git
 #  pkg-config
 #
 
@@ -18,33 +18,27 @@ set -euo pipefail
 scriptDir=$(dirname "$(readlink -f "$0")")
 installDir='/usr/share/icons'
 tmpDir=$(mktemp -d /tmp/arc-icon-theme.XXXXXXXX)
-pkgUrl='https://github.com/horst3180/arc-icon-theme/archive/master.tar.gz'
+gitUrl='https://github.com/horst3180/arc-icon-theme.git'
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Cloning remote repository...'
+doGitCloneAndCd "$gitUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
-
-infoMsg 'Building...'
+printAction 'Building...'
 ./autogen.sh --prefix=/usr
 
-sed -i 's|^\(Inherits=\).*|\1Paper,Moka,elementary,Adwaita,gnome,hicolor|g' \
+sed -i 's|^\(Inherits=\).*|\1Paper,elementary,elementary-git,Adwaita,gnome,hicolor|g' \
 	./Arc/index.theme
 
-infoMsg 'Installing...'
+printAction 'Installing...'
 sudo rm -rf "$installDir"/Arc
 
-sudo make install
+sudo doMake install
 sudo gtk-update-icon-cache -f "$installDir"/Arc
 
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

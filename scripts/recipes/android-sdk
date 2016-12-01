@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+# Author:     Héctor Molinero Fernández <hector@molinero.xyz>
+# Repository: https://github.com/zant95/misc
+# License:    MIT, https://opensource.org/licenses/MIT
+#
+# Dependencies:
+#  curl
+#  openjdk-8-jdk
+#
+
+# Exit on errors
+set -euo pipefail
+
+# Globals
+scriptDir=$(dirname "$(readlink -f "$0")")
+binDir="$HOME/.opt/bin"
+baseDir="$HOME/.opt/android"
+homeDir="$baseDir/home"
+installDir="$baseDir/install/sdk"
+tmpDir=$(mktemp -d /tmp/android-sdk.XXXXXXXX)
+pkgUrl=$(
+	curl -sL 'https://developer.android.com/studio/index.html' | \
+	egrep -o 'https://dl\.google\.com/[^>]+/android-sdk_r[^>]+-linux\.tgz' | \
+	head -1
+)
+
+# Load helpers
+source "$scriptDir"/_helpers_
+
+# Process
+printAction 'Downloading package...'
+downloadExtractAndCd "$pkgUrl" "$tmpDir"
+
+printAction 'Installing...'
+rm -rf "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"
+
+cat > ./tools/android.patch <<-EOF
+--- a/tools/android
++++ b/tools/android
+@@ -110 +110 @@
+-exec "\$java_cmd" \\
++exec "\$java_cmd" -Duser.home="$homeDir" \\
+EOF
+
+mv "$tmpDir"/* "$installDir"
+
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'android' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+export ANDROID_HOME="$installDir"
+export PATH=\${PATH}:\$ANDROID_HOME/tools:\$ANDROID_HOME/platform-tools
+patch "$installDir"/tools/android "$installDir"/tools/android.patch -o "$installDir"/tools/android.patched
+sh "$installDir"/tools/android.patched "\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'adb' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+"$installDir"/platform-tools/adb "\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'fastboot' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+"$installDir"/platform-tools/fastboot "\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'zipalign' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+"$installDir"/build-tools/"\$(ls -v "$installDir"/build-tools | tail -1)"/zipalign "\$@"
+EOF
+)"
+
+printAction 'Removing temp files...'
+rm -rf "$tmpDir"
+

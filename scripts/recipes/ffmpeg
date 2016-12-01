@@ -1,0 +1,171 @@
+#!/usr/bin/env bash
+
+# Author:     Héctor Molinero Fernández <hector@molinero.xyz>
+# Repository: https://github.com/zant95/misc
+# License:    MIT, https://opensource.org/licenses/MIT
+#
+# Dependencies:
+#   automake
+#   build-essential
+#   flite1-dev
+#   frei0r-plugins-dev
+#   ladspa-sdk
+#   libass-dev
+#   libavc1394-dev
+#   libbluray-dev
+#   libbs2b-dev
+#   libcaca-dev
+#   libcdio-paranoia-dev
+#   libfdk-aac-dev
+#   libgme-dev
+#   libgsm1-dev
+#   libiec61883-dev
+#   libmodplug-dev
+#   libmp3lame-dev
+#   libopenal-dev
+#   libopencv-dev
+#   libopenjpeg-dev
+#   libopus-dev
+#   libpulse-dev
+#   librtmp-dev
+#   libschroedinger-dev
+#   libsdl2-dev
+#   libshine-dev
+#   libsnappy-dev
+#   libsoxr-dev
+#   libspeex-dev
+#   libtheora-dev
+#   libtwolame-dev
+#   libvorbis-dev
+#   libvpx-dev
+#   libwavpack-dev
+#   libwebp-dev
+#   libx264-dev
+#   libx265-dev
+#   libxvidcore-dev
+#   libzmq3-dev
+#   libzvbi-dev
+#   ocl-icd-opencl-dev
+#   pkg-config
+#   yasm
+#
+
+# Exit on errors
+set -euo pipefail
+
+# Globals
+scriptDir=$(dirname "$(readlink -f "$0")")
+binDir="$HOME/.opt/bin"
+baseDir="$HOME/.opt/ffmpeg"
+installDir="$baseDir"
+tmpDir=$(mktemp -d /tmp/ffmpeg.XXXXXXXX)
+pkgUrl='https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2'
+
+# Load helpers
+source "$scriptDir"/_helpers_
+
+# Process
+printAction 'Downloading package...'
+downloadExtractAndCd "$pkgUrl" "$tmpDir"
+
+printAction 'Building...'
+doConfigureAndMake \
+	--prefix="$installDir" \
+	--arch="$(uname -m)" \
+	--cpu=host \
+	--toolchain=hardened \
+	--disable-shared \
+	--enable-static \
+	--disable-debug \
+	--disable-doc \
+	--enable-gpl \
+	--enable-version3 \
+	--enable-nonfree \
+	--enable-avisynth \
+	--enable-avresample \
+	--enable-frei0r \
+	--enable-gray \
+	--enable-ladspa \
+	--enable-libass \
+	--enable-libbluray \
+	--enable-libbs2b \
+	--enable-libcaca \
+	--enable-libcdio \
+	--enable-libdc1394 \
+	--enable-libfdk-aac \
+	--enable-libflite \
+	--enable-libfontconfig \
+	--enable-libfreetype \
+	--enable-libfribidi \
+	--enable-libgme \
+	--enable-libgsm \
+	--enable-libiec61883 \
+	--enable-libmodplug \
+	--enable-libmp3lame \
+	--enable-libopencv \
+	--enable-libopenjpeg \
+	--enable-libopus \
+	--enable-libpulse \
+	--enable-librtmp \
+	--enable-libschroedinger \
+	--enable-libshine \
+	--enable-libsnappy \
+	--enable-libsoxr \
+	--enable-libspeex \
+	--enable-libssh \
+	--enable-libtheora \
+	--enable-libtwolame \
+	--enable-libvorbis \
+	--enable-libvpx \
+	--enable-libwavpack \
+	--enable-libwebp \
+	--enable-libx264 \
+	--enable-libx265 \
+	--enable-libxvid \
+	--enable-libzmq \
+	--enable-libzvbi \
+	--enable-openal \
+	--enable-opencl \
+	--enable-opengl \
+	--enable-openssl \
+	--enable-x11grab
+
+printAction 'Installing...'
+rm -rf "$installDir"
+mkdir -p "$binDir"
+
+doMake install
+
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'ffmpeg' "$(cat <<-EOF
+#!/usr/bin/env bash
+"$installDir"/bin/ffmpeg \
+	-hide_banner \
+	"\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'ffplay' "$(cat <<-EOF
+#!/usr/bin/env bash
+"$installDir"/bin/ffplay \
+	-hide_banner \
+	"\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'ffprobe' "$(cat <<-EOF
+#!/usr/bin/env bash
+"$installDir"/bin/ffprobe \
+	-hide_banner \
+	"\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'ffserver' "$(cat <<-EOF
+#!/usr/bin/env bash
+"$installDir"/bin/ffserver \
+	-hide_banner \
+	"\$@"
+EOF
+)"
+
+printAction 'Removing temp files...'
+rm -rf "$tmpDir"
+

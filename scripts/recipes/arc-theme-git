@@ -5,9 +5,9 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 # Dependencies:
-#  autoconf
 #  automake
 #  build-essential
+#  git
 #  gnome-themes-standard
 #  gtk2-engines-murrine
 #  libgtk-3-dev
@@ -21,29 +21,23 @@ set -euo pipefail
 scriptDir=$(dirname "$(readlink -f "$0")")
 installDir='/usr/share/themes'
 tmpDir=$(mktemp -d /tmp/arc-gtk-theme.XXXXXXXX)
-pkgUrl='https://github.com/horst3180/arc-theme/archive/master.tar.gz'
+gitUrl='https://github.com/horst3180/arc-theme.git'
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Cloning remote repository...'
+doGitCloneAndCd "$gitUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
-
-infoMsg 'Building...'
+printAction 'Building...'
 ./autogen.sh --prefix=/usr
 
-infoMsg 'Installing...'
+printAction 'Installing...'
 sudo rm -rf "$installDir"/{Arc,Arc-Darker,Arc-Dark}
 
-sudo make install
+sudo doMake install
 
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

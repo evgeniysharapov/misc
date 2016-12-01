@@ -6,7 +6,9 @@
 #
 # Dependencies:
 #  bridge-utils
+#  curl
 #  libvirt-bin
+#  openjdk-8-jdk
 #  qemu-kvm
 #
 
@@ -27,32 +29,25 @@ pkgUrl=$(
 )
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Downloading package...'
+downloadExtractAndCd "$pkgUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO "android-studio.zip"
-unzip -q "android-studio.zip"
-
-infoMsg 'Installing...'
+printAction 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
-cat > android-studio/bin/custom.vmoptions <<EOF
+cat > ./bin/custom.vmoptions <<EOF
 -Duser.home=$homeDir
 EOF
 
-mv android-studio/* "$installDir"
+mv "$tmpDir"/* "$installDir"
 
-cat > "$installDir"/android-studio-wrapper.sh <<EOF
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'android-studio' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
@@ -60,17 +55,14 @@ export XDG_DATA_HOME="$homeDir/.local/share"
 export STUDIO_VM_OPTIONS="$installDir/bin/custom.vmoptions"
 export ANDROID_HOME="$baseDir/install/sdk"
 export PATH=\${PATH}:\$ANDROID_HOME/tools:\$ANDROID_HOME/platform-tools
-
 "$installDir"/bin/studio.sh "\$@"
 EOF
+)"
 
-ln -fs "$installDir"/android-studio-wrapper.sh "$binDir"/android-studio
-chmod 755 "$binDir"/android-studio
-
-infoMsg 'Creating launcher...'
-mkdir -p "$HOME/.local/share/applications"
-cat > "$HOME/.local/share/applications/opt.android-studio.desktop" <<EOF
+printAction 'Creating launchers...'
+createLauncher "$installDir" 'android-studio' "$(cat <<-EOF
 [Desktop Entry]
+Version=1.0
 Type=Application
 Name=Android Studio
 Categories=Development;IDE;
@@ -80,10 +72,10 @@ StartupWMClass=jetbrains-studio
 Terminal=false
 Exec=$binDir/android-studio %f
 Icon=android-sdk
-#Icon=$installDir/bin/studio.png
 MimeType=application/x-extension-iml;
 EOF
+)"
 
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

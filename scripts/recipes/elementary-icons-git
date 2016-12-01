@@ -4,36 +4,39 @@
 # Repository: https://github.com/zant95/misc
 # License:    MIT, https://opensource.org/licenses/MIT
 #
+# Dependencies:
+#  git
+#
 
 # Exit on errors
 set -euo pipefail
 
 # Globals
 scriptDir=$(dirname "$(readlink -f "$0")")
-installDir='/usr/share/icons/elementary'
+installDir='/usr/share/icons/elementary-git'
 tmpDir=$(mktemp -d /tmp/elementary-icon-theme.XXXXXXXX)
-pkgUrl='https://github.com/elementary/icons/archive/master.tar.gz'
+gitUrl='https://github.com/elementary/icons.git'
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Cloning remote repository...'
+doGitCloneAndCd "$gitUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
-
-infoMsg 'Installing...'
+printAction 'Installing...'
 sudo rm -rf "$installDir"
 sudo mkdir -p "$installDir"
+
+sed -i 's|^\(Name=\).*|\1elementary-git|g' \
+	./index.theme
+
+sed -i 's|^\(Name=\).*|\1elementary-git|g;s|^\(Inherits=\).*|\1elementary-git|g;' \
+	./cursor.theme
 
 sudo mv "$tmpDir"/* "$installDir"
 sudo gtk-update-icon-cache -f "$installDir"
 
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

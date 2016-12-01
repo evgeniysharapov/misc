@@ -22,54 +22,50 @@ tmpDir=$(mktemp -d /tmp/vscode.XXXXXXXX)
 pkgUrl='http://go.microsoft.com/fwlink/?LinkID=620884'
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Downloading package...'
+downloadExtractAndCd "$pkgUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
-
-infoMsg 'Installing...'
+printAction 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
 mv "$tmpDir"/* "$installDir"
 
-cat > "$installDir"/vscode-wrapper.sh <<EOF
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'vscode' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-
 "$installDir"/code "\$@"
 EOF
+)"
 
-ln -fs "$installDir"/vscode-wrapper.sh "$binDir"/vscode
-chmod 755 "$binDir"/vscode
-
-infoMsg 'Creating launcher...'
-mkdir -p "$HOME/.local/share/applications"
-cat > "$HOME/.local/share/applications/opt.vscode.desktop" <<EOF
+printAction 'Creating launchers...'
+createLauncher "$installDir" 'vscode' "$(cat <<-EOF
 [Desktop Entry]
+Version=1.0
 Type=Application
 Name=Visual Studio Code
 Categories=Development;IDE;TextEditor;Utility;
 Keywords=code;vscode;
 StartupNotify=true
 Terminal=false
-Exec=$binDir/vscode
+Exec=$binDir/vscode %U
 Icon=visual-studio-code
-#Icon=$installDir/resources/app/resources/linux/code.png
 MimeType=text/plain;
-EOF
 
-infoMsg 'Removing temp files...'
+[Desktop Action new-window]
+Name=New Window
+Exec=$binDir/vscode --new-window %U
+Icon=visual-studio-code
+EOF
+)"
+
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

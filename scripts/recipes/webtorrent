@@ -4,6 +4,9 @@
 # Repository: https://github.com/zant95/misc
 # License:    MIT, https://opensource.org/licenses/MIT
 #
+# Dependencies:
+#  curl
+#
 
 # Exit on errors
 set -euo pipefail
@@ -17,29 +20,22 @@ installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/webtorrent.XXXXXXXX)
 pkgUrl='https://github.com'$(
 	curl -sL 'https://github.com/feross/webtorrent-desktop/releases/latest' | \
-	egrep -o '/feross/webtorrent-desktop/releases/download/[^>]+/WebTorrent-[^>]+-linux.zip' | \
+	egrep -o '/feross/webtorrent-desktop/releases/download/[^>]+/WebTorrent-[^>]+-linux\.zip' | \
 	head -1
 )
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Downloading package...'
+downloadExtractAndCd "$pkgUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO "webtorrent.zip"
-unzip -q "webtorrent.zip"
-
-infoMsg 'Installing...'
+printAction 'Installing...'
 rm -rf "$installDir" "$baseDir"
 mkdir -p "$binDir" "$homeDir"/Downloads "$installDir"
 
-mv WebTorrent-linux-x64/* "$installDir"
+mv "$tmpDir"/* "$installDir"
 
 if [ ! -f "$homeDir"/.config/WebTorrent/config.json ]; then
 	mkdir -p "$homeDir"/.config/WebTorrent
@@ -54,49 +50,47 @@ if [ ! -f "$homeDir"/.config/WebTorrent/config.json ]; then
 	EOF
 fi
 
-cat > "$installDir"/webtorrent-wrapper.sh <<EOF
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'webtorrent' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-
 "$installDir"/WebTorrent "\$@"
 EOF
+)"
 
-ln -fs "$installDir"/webtorrent-wrapper.sh "$binDir"/webtorrent
-chmod 755 "$binDir"/webtorrent
-
-infoMsg 'Creating launcher...'
-cat > "$HOME/.local/share/applications/opt.webtorrent.desktop" <<EOF
+printAction 'Creating launchers...'
+createLauncher "$installDir" 'webtorrent' "$(cat <<-EOF
 [Desktop Entry]
+Version=1.0
 Type=Application
 Name=WebTorrent
 Categories=AudioVideo;Video;Network;Player;P2P;
 Keywords=torrent;stream;
 StartupNotify=true
 Terminal=false
-Exec=$binDir/webtorrent %u
+Exec=$binDir/webtorrent %U
 #Icon=webtorrent
 Icon=$installDir/resources/app.asar.unpacked/static/WebTorrent.png
 MimeType=application/x-bittorrent;x-scheme-handler/magnet;x-scheme-handler/stream-magnet;
-
 Actions=CreateNewTorrent;OpenTorrentFile;OpenTorrentAddress;
 
 [Desktop Action CreateNewTorrent]
-Name=Create New Torrent...
+Name=Create new torrent...
 Exec=$binDir/webtorrent -n
 
 [Desktop Action OpenTorrentFile]
-Name=Open Torrent File...
+Name=Open torrent file...
 Exec=$binDir/webtorrent -o
 
 [Desktop Action OpenTorrentAddress]
-Name=Open Torrent Address...
+Name=Open torrent address...
 Exec=$binDir/webtorrent -u
 EOF
+)"
 
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

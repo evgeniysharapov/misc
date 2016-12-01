@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+# Author:     Héctor Molinero Fernández <hector@molinero.xyz>
+# Repository: https://github.com/zant95/misc
+# License:    MIT, https://opensource.org/licenses/MIT
+#
+# Dependencies:
+#  build-essential
+#  cmake
+#  git
+#  libgcrypt20-dev
+#  libqt4-dev
+#  libqt5x11extras5-dev
+#  libxi-dev
+#  libxtst-dev
+#  qtbase5-dev
+#  qttools5-dev
+#  qttools5-dev-tools
+#  zlib1g-dev
+#
+
+# Exit on errors
+set -euo pipefail
+
+# Globals
+scriptDir=$(dirname "$(readlink -f "$0")")
+binDir="$HOME/.opt/bin"
+baseDir="$HOME/.opt/keepassx"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp -d /tmp/keepassx.XXXXXXXX)
+gitUrl='https://github.com/keepassx/keepassx.git'
+
+# Load helpers
+source "$scriptDir"/_helpers_
+
+# Process
+printAction 'Cloning remote repository...'
+doGitCloneLastTagAndCd "$gitUrl" "$tmpDir"
+
+printAction 'Building...'
+doCmake \
+	-D CMAKE_INSTALL_PREFIX="$installDir" \
+	-D CMAKE_BUILD_TYPE=Release \
+	-D WITH_GUI_TESTS=ON
+doMake
+doMake test
+
+printAction 'Installing...'
+rm -rf "$installDir"
+mkdir -p "$binDir" "$homeDir"/.config "$installDir"
+
+doMake install
+
+cat > "$homeDir"/.config/Trolltech.conf <<-'EOF'
+[Qt]
+style=GTK+
+EOF
+
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'keepassx' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+"$installDir"/bin/keepassx \
+	--config "$homeDir"/keepassx.ini \
+	"\$@"
+EOF
+)"
+
+printAction 'Creating launchers...'
+createLauncher "$installDir" 'keepassx' "$(cat <<-EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=KeePassX
+Categories=Utility;
+Keywords=password;
+StartupNotify=true
+Terminal=false
+Exec=$binDir/keepassx %f
+Icon=keepassx
+MimeType=application/x-keepass2;
+EOF
+)"
+
+printAction 'Removing temp files...'
+rm -rf "$tmpDir"
+

@@ -1,0 +1,520 @@
+#!/usr/bin/env bash
+
+# Author:     Héctor Molinero Fernández <hector@molinero.xyz>
+# Repository: https://github.com/zant95/misc
+# License:    MIT, https://opensource.org/licenses/MIT
+#
+# Dependencies:
+#  automake
+#  build-essential
+#  cmake
+#  git
+#  gperf
+#  libtool
+#  mingw-w64
+#  pkg-config
+#  yasm
+#
+
+# Exit on errors
+set -euo pipefail
+
+# Globals
+scriptDir=$(dirname "$(readlink -f "$0")")
+installDir="$HOME/ffmpeg-mingw-w64"
+tmpDir=$(mktemp -d /tmp/ffmpeg-mingw-w64.XXXXXXXX)
+build=$(gcc -dumpmachine)
+target='x86_64-w64-mingw32'
+host="$target"
+prefix="$tmpDir/build"
+
+zlibPkg='http://http.debian.net/debian/pool/main/z/zlib/zlib_1.2.8.dfsg.orig.tar.gz'
+bzip2Pkg='http://http.debian.net/debian/pool/main/b/bzip2/bzip2_1.0.6.orig.tar.bz2'
+#lzmaPkg='http://http.debian.net/debian/pool/main/x/xz-utils/xz-utils_5.2.2.orig.tar.xz'
+libdlfcnPkg='https://github.com/dlfcn-win32/dlfcn-win32/archive/v1.0.0.tar.gz'
+libresslPkg='https://github.com/libressl-portable/portable/archive/v2.4.4.tar.gz'
+libsdl2Pkg='http://http.debian.net/debian/pool/main/libs/libsdl2/libsdl2_2.0.5+dfsg1.orig.tar.xz'
+libpngPkg='http://http.debian.net/debian/pool/main/libp/libpng1.6/libpng1.6_1.6.26.orig.tar.xz'
+libxml2Pkg='http://http.debian.net/debian/pool/main/libx/libxml2/libxml2_2.9.4+dfsg1.orig.tar.xz'
+libfreetypePkg='https://download.savannah.gnu.org/releases/freetype/freetype-2.7.tar.gz'
+#libexpatPkg='http://http.debian.net/debian/pool/main/e/expat/expat_2.2.0.orig.tar.bz2'
+libfontconfigPkg='https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.12.1.tar.gz'
+libfribidiPkg='http://http.debian.net/debian/pool/main/f/fribidi/fribidi_0.19.7.orig.tar.bz2'
+libassPkg='http://http.debian.net/debian/pool/main/liba/libass/libass_0.13.4.orig.tar.xz'
+libfdkaacPkg='http://http.debian.net/debian/pool/non-free/f/fdk-aac/fdk-aac_0.1.4.orig.tar.gz'
+libmp3lamePkg='http://http.debian.net/debian/pool/main/l/lame/lame_3.99.5+repack1.orig.tar.gz'
+liboggPkg='http://http.debian.net/debian/pool/main/libo/libogg/libogg_1.3.2.orig.tar.gz'
+libopusPkg='http://http.debian.net/debian/pool/main/o/opus/opus_1.1.3.orig.tar.gz'
+libvorbisPkg='http://http.debian.net/debian/pool/main/libv/libvorbis/libvorbis_1.3.5.orig.tar.gz'
+libwavpackPkg='http://http.debian.net/debian/pool/main/w/wavpack/wavpack_4.80.0.orig.tar.bz2'
+libblurayPkg='http://http.debian.net/debian/pool/main/libb/libbluray/libbluray_0.9.3.orig.tar.bz2'
+libtheoraPkg='http://http.debian.net/debian/pool/main/libt/libtheora/libtheora_1.1.1+dfsg.1.orig.tar.gz'
+libvpxPkg='http://http.debian.net/debian/pool/main/libv/libvpx/libvpx_1.6.0.orig.tar.gz'
+libwebpPkg='http://http.debian.net/debian/pool/main/libw/libwebp/libwebp_0.5.1.orig.tar.gz'
+libx264Pkg='http://http.debian.net/debian/pool/main/x/x264/x264_0.148.2708+git86b7198.orig.tar.gz'
+libx265Pkg='http://http.debian.net/debian/pool/main/x/x265/x265_2.1.orig.tar.gz'
+libxvidPkg='http://http.debian.net/debian/pool/main/x/xvidcore/xvidcore_1.3.4.orig.tar.gz'
+ffmpegPkg='https://ffmpeg.org/releases/ffmpeg-snapshot.tar.bz2'
+
+# Load helpers
+source "$scriptDir"/_helpers_
+
+# Methods
+eval _"$(declare -f doConfigure)"
+doConfigure() {
+	_doConfigure \
+		--prefix="$prefix" \
+		"$@"
+}
+
+doCrossConfigure() {
+	doConfigure \
+		--build="$build" \
+		--target="$target" \
+		--host="$host" \
+		--enable-static \
+		--disable-shared \
+		--disable-debug \
+		--disable-docs \
+		--disable-doc \
+		--disable-examples \
+		--disable-tests \
+		"$@"
+}
+
+doCrossMake() {
+	doMake \
+		-e CC="$(which ${host}-gcc)" \
+		-e CXX="$(which ${host}-g++)" \
+		-e RANLIB="$(which ${host}-ranlib)" \
+		-e AR="$(which ${host}-ar)" \
+		-e AS="$(which ${host}-as)" \
+		-e LD="$(which ${host}-ld)" \
+		-e NM="$(which ${host}-nm)" \
+		-e OBJCOPY="$(which ${host}-objcopy)" \
+		-e OBJDUMP="$(which ${host}-objdump)" \
+		-e RC="$(which ${host}-windres)" \
+		-e STRIP="$(which ${host}-strip)" \
+		"$@"
+}
+
+doCrossCMake() {
+	cmake \
+		-D CMAKE_FIND_LIBRARY_SUFFIXES='.a' \
+		-D CMAKE_EXE_LINKER_FLAGS='-static' \
+		-D BUILD_SHARED_LIBS=OFF \
+		-D CMAKE_SYSTEM_NAME=Windows \
+		-D GNU_HOST="$host" \
+		-D CMAKE_C_COMPILER="$(which ${host}-gcc)" \
+		-D CMAKE_CXX_COMPILER="$(which ${host}-g++)" \
+		-D CMAKE_RC_COMPILER="$(which ${host}-windres)" \
+		-D CMAKE_AR="$(which ${host}-ar)" \
+		-D CMAKE_AS="$(which ${host}-as)" \
+		-D CMAKE_LINKER="$(which ${host}-ld)" \
+		-D CMAKE_NM="$(which ${host}-nm)" \
+		-D CMAKE_OBJCOPY="$(which ${host}-objcopy)" \
+		-D CMAKE_OBJDUMP="$(which ${host}-objdump)" \
+		-D CMAKE_RANLIB="$(which ${host}-ranlib)" \
+		-D CMAKE_STRIP="$(which ${host}-strip)" \
+		-D CMAKE_INSTALL_PREFIX="$prefix" \
+		-D CMAKE_FIND_ROOT_PATH=/usr/"$host" \
+		-D CMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
+		-D CMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
+		-D CMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
+		"$@"
+}
+
+# Process
+export PATH="$PATH:$prefix/bin"
+export PKG_CONFIG_LIBDIR=''
+export PKG_CONFIG_PATH="$prefix/lib/pkgconfig"
+export LDFLAGS="-L$prefix/lib"
+export CPPFLAGS="-g -O2 -I$prefix/include"
+export CFLAGS="$CPPFLAGS"
+export CXXFLAGS="$CPPFLAGS"
+
+# ZLIB #########################################################################
+
+if [ -n "${zlibPkg:-}" ]; then
+	printAction 'Building zlib...'
+	downloadExtractAndCd "$zlibPkg" "$tmpDir"/zlib
+
+	doConfigure \
+		--static
+	doCrossMake install \
+		-e ARFLAGS=rcs
+fi
+
+# BZIP2 ########################################################################
+
+if [ -n "${bzip2Pkg:-}" ]; then
+	printAction 'Building bzip2...'
+	downloadExtractAndCd "$bzip2Pkg" "$tmpDir"/bzip2
+
+	sed -i '/#[[:blank:]]*include/s/\\/\//g' *.c *.h
+	doCrossMake install \
+		-e PREFIX="$prefix"
+fi
+
+# LZMA #######################################################################
+
+if [ -n "${lzmaPkg:-}" ]; then
+	printAction 'Building lzma...'
+	downloadExtractAndCd "$lzmaPkg" "$tmpDir"/lzma
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBDLFCN ######################################################################
+
+if [ -n "${libdlfcnPkg:-}" ]; then
+	printAction 'Building libdlfcn...'
+	downloadExtractAndCd "$libdlfcnPkg" "$tmpDir"/libdlfcn
+
+	doConfigure \
+		--cross-prefix="${host}-" \
+		--disable-shared \
+		--enable-static
+	doMake
+	doMake install
+fi
+
+# LIBRESSL ######################################################################
+
+if [ -n "${libresslPkg:-}" ]; then
+	printAction 'Building libressl...'
+	downloadExtractAndCd "$libresslPkg" "$tmpDir"/libressl
+
+	doCrossConfigure
+	doMake install
+fi
+
+# SDL2 #########################################################################
+
+if [ -n "${libsdl2Pkg:-}" ]; then
+	printAction 'Building libsdl2...'
+	downloadExtractAndCd "$libsdl2Pkg" "$tmpDir"/libsdl2
+
+	doCrossConfigure \
+		--disable-render-d3d
+	doMake install
+
+	# ffmpeg expects ${host}-sdl2-config
+	ln -s "$prefix"/bin/sdl2-config "$prefix"/bin/"${host}-sdl2-config"
+fi
+
+# LIBPNG #######################################################################
+
+if [ -n "${libpngPkg:-}" ]; then
+	printAction 'Building libpng...'
+	downloadExtractAndCd "$libpngPkg" "$tmpDir"/libpng
+
+	# Prevent 'configure' generation
+	rm -f ./autogen.sh
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBXML2 ######################################################################
+
+if [ -n "${libxml2Pkg:-}" ]; then
+	printAction 'Building libxml2...'
+	downloadExtractAndCd "$libxml2Pkg" "$tmpDir"/libxml2
+
+	doCrossConfigure \
+		--without-python
+	doMake install
+fi
+
+# LIBFREETYPE ##################################################################
+
+if [ -n "${libfreetypePkg:-}" ]; then
+	printAction 'Building libfreetype...'
+	downloadExtractAndCd "$libfreetypePkg" "$tmpDir"/libfreetype
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBEXPAT ##################################################################
+
+if [ -n "${libexpatPkg:-}" ]; then
+	printAction 'Building libexpat...'
+	downloadExtractAndCd "$libexpatPkg" "$tmpDir"/libexpat
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBFONTCONFIG ################################################################
+
+if [ -n "${libfontconfigPkg:-}" ]; then
+	printAction 'Building libfontconfig...'
+	downloadExtractAndCd "$libfontconfigPkg" "$tmpDir"/libfontconfig
+
+	doCrossConfigure \
+		--enable-libxml2
+	doMake install
+fi
+
+# LIBFRIBIDI ###################################################################
+
+if [ -n "${libfribidiPkg:-}" ]; then
+	printAction 'Building libfribidi...'
+	downloadExtractAndCd "$libfribidiPkg" "$tmpDir"/libfribidi
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBASS #######################################################################
+
+if [ -n "${libassPkg:-}" ]; then
+	printAction 'Building libass...'
+	downloadExtractAndCd "$libassPkg" "$tmpDir"/libass
+
+	doCrossConfigure \
+		--disable-asm \
+		--disable-harfbuzz
+	doMake install
+fi
+
+# LIBFDK-AAC ###################################################################
+
+if [ -n "${libfdkaacPkg:-}" ]; then
+	printAction 'Building libfdk-aac...'
+	downloadExtractAndCd "$libfdkaacPkg" "$tmpDir"/libfdk_aac
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBMP3LAME ###################################################################
+
+if [ -n "${libmp3lamePkg:-}" ]; then
+	printAction 'Building libmp3lame...'
+	downloadExtractAndCd "$libmp3lamePkg" "$tmpDir"/libmp3lame
+
+	doCrossConfigure \
+		--disable-frontend
+	doMake install
+fi
+
+# LIBOGG #######################################################################
+
+if [ -n "${liboggPkg:-}" ]; then
+	printAction 'Building libogg...'
+	downloadExtractAndCd "$liboggPkg" "$tmpDir"/libogg
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBOPUS ######################################################################
+
+if [ -n "${libopusPkg:-}" ]; then
+	printAction 'Building libopus...'
+	downloadExtractAndCd "$libopusPkg" "$tmpDir"/libopus
+
+	doCrossConfigure \
+		--disable-extra-programs
+	doMake install
+fi
+
+# LIBBLURAY ####################################################################
+
+if [ -n "${libblurayPkg:-}" ]; then
+	printAction 'Building libbluray...'
+	downloadExtractAndCd "$libblurayPkg" "$tmpDir"/libbluray
+
+	doCrossConfigure \
+		--disable-bdjava
+	doMake install
+fi
+
+# LIBWAVPACK ###################################################################
+
+if [ -n "${libwavpackPkg:-}" ]; then
+	printAction 'Building libwavpack...'
+	downloadExtractAndCd "$libwavpackPkg" "$tmpDir"/libwavpack
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBVORBIS ####################################################################
+
+if [ -n "${libvorbisPkg:-}" ]; then
+	printAction 'Building libvorbis...'
+	downloadExtractAndCd "$libvorbisPkg" "$tmpDir"/libvorbis
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBTHEORA ####################################################################
+
+if [ -n "${libtheoraPkg:-}" ]; then
+	printAction 'Building libtheora...'
+	downloadExtractAndCd "$libtheoraPkg" "$tmpDir"/libtheora
+
+	patch ./doc/Makefile.am <<-'EOF'
+	--- a/doc/Makefile.am
+	+++ b/doc/Makefile.am
+	@@ -7,3 +7 @@
+	-static_docs = vp3-format.txt color.html \
+	-	draft-ietf-avt-rtp-theora-00.xml \
+	-	draft-ietf-avt-rtp-theora-00.txt
+	+static_docs = vp3-format.txt color.html
+	EOF
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBVPX #######################################################################
+
+if [ -n "${libvpxPkg:-}" ]; then
+	printAction 'Building libvpx...'
+	downloadExtractAndCd "$libvpxPkg" "$tmpDir"/libvpx
+
+	CROSS="${host}-" doConfigure \
+		--target='x86_64-win64-gcc' \
+		--enable-runtime-cpu-detect \
+		--enable-static \
+		--disable-shared \
+		--disable-examples \
+		--disable-docs \
+		--disable-install-bins \
+		--disable-install-docs \
+		--disable-install-srcs \
+		--enable-pic \
+		--enable-vp8 \
+		--enable-postproc \
+		--enable-vp9 \
+		--enable-vp9-highbitdepth \
+		--enable-experimental \
+		--enable-spatial-svc
+	doMake install
+fi
+
+# LIBWEBP #######################################################################
+
+if [ -n "${libwebpPkg:-}" ]; then
+	printAction 'Building libwebp...'
+	downloadExtractAndCd "$libwebpPkg" "$tmpDir"/libwebp
+
+	doCrossConfigure
+	doMake install
+fi
+
+# LIBX264 ######################################################################
+
+if [ -n "${libx264Pkg:-}" ]; then
+	printAction 'Building libx264...'
+	downloadExtractAndCd "$libx264Pkg" "$tmpDir"/libx264
+
+	doCrossConfigure \
+		--cross-prefix="${host}-" \
+		--enable-win32thread
+	doMake install
+fi
+
+# LIBX265 ######################################################################
+
+if [ -n "${libx265Pkg:-}" ]; then
+	printAction 'Building libx265...'
+	downloadExtractAndCd "$libx265Pkg" "$tmpDir"/libx265
+
+	cd ./build/linux
+	doCrossCMake \
+		-G "Unix Makefiles" \
+		-D ENABLE_SHARED=OFF \
+		-D ENABLE_CLI=OFF \
+		-D HIGH_BIT_DEPTH=ON \
+		../../source
+	doMake install
+fi
+
+# LIBXVID ###################################################################
+
+if [ -n "${libxvidPkg:-}" ]; then
+	printAction 'Building libxvid...'
+	downloadExtractAndCd "$libxvidPkg" "$tmpDir"/libxvid
+
+	cd ./build/generic
+	doCrossConfigure
+	doMake
+	doMake install
+
+	# Force a static build
+	if [[ -f "$prefix"/lib/xvidcore.dll.a ]]; then
+		rm "$prefix"/lib/xvidcore.dll.a
+		mv "$prefix"/lib/xvidcore.a "$prefix"/lib/libxvidcore.a
+	fi
+fi
+
+# FFMPEG #######################################################################
+
+if [ -n "${ffmpegPkg:-}" ]; then
+	printAction 'Building ffmpeg...'
+	downloadExtractAndCd "$ffmpegPkg" "$tmpDir"/ffmpeg
+
+	doConfigure \
+		--arch=x86_64 \
+		--target-os=mingw32 \
+		--cross-prefix="${host}-" \
+		--extra-ldflags='-static-libgcc -static-libstdc++ -Wl,-Bstatic -mconsole' \
+		--extra-libs='-lstdc++' \
+		--extra-libs='-lws2_32' \
+		--extra-libs='-loleaut32' \
+		--extra-libs='-lpsapi' \
+		--extra-libs='-lpthread' \
+		--extra-libs='-lz' \
+		--extra-libs='-lpng' \
+		--extra-libs='-lxml2' \
+		--pkg-config=pkg-config \
+		--enable-runtime-cpudetect \
+		--enable-static \
+		--disable-shared \
+		--disable-debug \
+		--disable-doc \
+		--disable-w32threads \
+		--enable-gpl \
+		--enable-version3 \
+		--enable-nonfree \
+		--enable-avisynth \
+		--enable-avresample \
+		--enable-dxva2 \
+		--enable-gray \
+		--enable-libass \
+		--enable-libbluray \
+		--enable-libfdk-aac \
+		--enable-libfontconfig \
+		--enable-libfreetype \
+		--enable-libfribidi \
+		--enable-libmp3lame \
+		--enable-libopus \
+		--enable-libtheora \
+		--enable-libvorbis \
+		--enable-libvpx \
+		--enable-libwavpack \
+		--enable-libwebp \
+		--enable-libx264 \
+		--enable-libx265 \
+		--enable-libxvid \
+		--enable-openssl
+	doMake install
+fi
+
+################################################################################
+
+printAction 'Moving to target folder...'
+rm -rf "$installDir"
+mkdir -p "$installDir"
+cp -v "$prefix"/bin/{ffmpeg,ffplay,ffprobe,ffserver}.exe "$installDir" 2>/dev/null || true
+
+printAction 'Removing temp files...'
+rm -rf "$tmpDir"

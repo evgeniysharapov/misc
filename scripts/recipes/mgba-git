@@ -5,24 +5,26 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 # Dependencies:
-#  autoconf
 #  automake
 #  build-essential
 #  cmake
-#  ffmpeg
-#  imagemagick
+#  git
 #  libavcodec-dev
 #  libavformat-dev
 #  libavresample-dev
+#  libavutil-dev
 #  libedit-dev
 #  libepoxy-dev
 #  libmagickwand-dev
 #  libminizip-dev
-#  libpng12-dev
+#  libpng-dev
+#  libqt5opengl5-dev
 #  libsdl2-dev
+#  libswscale-dev
 #  libzip-dev
 #  qtbase5-dev
 #  qtmultimedia5-dev
+#  qttools5-dev-tools
 #  zlib1g-dev
 #
 
@@ -36,69 +38,67 @@ baseDir="$HOME/.opt/mgba"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/mgba.XXXXXXXX)
-pkgUrl='https://github.com'$(
-	curl -sL 'https://github.com/mgba-emu/mgba/releases/latest' | \
-	egrep -o '/mgba-emu/mgba/archive/[^>]+\.tar\.gz' | \
-	head -1
-)
+gitUrl='https://github.com/mgba-emu/mgba.git'
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Cloning remote repository...'
+doGitCloneAndCd "$gitUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
+printAction 'Building...'
+doCmake \
+	-D CMAKE_INSTALL_PREFIX="$installDir" \
+	-D BUILD_STATIC=ON \
+	-D BUILD_SHARED=ON \
+	-D CMAKE_BUILD_TYPE=Release
+doMake
 
-infoMsg 'Building...'
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX:PATH="$installDir" ..
-
-make -j $(nproc)
-
-infoMsg 'Installing...'
+printAction 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
-make install
+doMake install
 
-cat > "$installDir"/mgba-wrapper.sh <<EOF
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'mgba' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
 export LD_LIBRARY_PATH="$installDir/lib"
-
+"$installDir"/bin/mgba "\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'mgba-qt' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+export LD_LIBRARY_PATH="$installDir/lib"
 "$installDir"/bin/mgba-qt "\$@"
 EOF
+)"
 
-ln -fs "$installDir"/mgba-wrapper.sh "$binDir"/mgba
-chmod 755 "$binDir"/mgba
-
-infoMsg 'Creating launcher...'
-mkdir -p "$HOME/.local/share/applications"
-cat > "$HOME/.local/share/applications/opt.mgba.desktop" <<EOF
+printAction 'Creating launchers...'
+createLauncher "$installDir" 'mgba' "$(cat <<-EOF
 [Desktop Entry]
+Version=1.0
 Type=Application
 Name=mGBA
 Categories=Game;Emulator;
 Keywords=nintendo;gba,gbc;emulator;
 StartupNotify=true
 Terminal=false
-Exec=$binDir/mgba %f
+Exec=$binDir/mgba-qt %f
 Icon=mgba
-#Icon=$installDir/usr/local/share/icons/hicolor/512x512/apps/mgba.png
 MimeType=application/x-gameboy-advance-rom;application/x-agb-rom;application/x-gba-rom;
 EOF
+)"
 
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 

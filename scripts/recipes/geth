@@ -6,8 +6,8 @@
 #
 # Dependencies:
 #  build-essential
+#  git
 #  golang
-#  libgmp-dev
 #
 
 # Exit on errors
@@ -20,49 +20,36 @@ baseDir="$HOME/.opt/geth"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/geth.XXXXXXXX)
-pkgUrl='https://github.com'$(
-	curl -sL 'https://github.com/ethereum/go-ethereum/releases/latest' | \
-	egrep -o '/ethereum/go-ethereum/archive/[^>]+\.tar\.gz' | \
-	head -1
-)
+gitUrl='https://github.com/ethereum/go-ethereum.git'
 
 # Load helpers
-if [ -f "$scriptDir"/_helpers.sh ]; then
-	source "$scriptDir"/_helpers.sh
-else
-	source <(curl -sL 'https://raw.githubusercontent.com/zant95/misc/master/scripts/recipes/_helpers.sh')
-fi
+source "$scriptDir"/_helpers_
 
 # Process
-cd "$tmpDir"
+printAction 'Cloning remote repository...'
+doGitCloneLastTagAndCd "$gitUrl" "$tmpDir"
 
-infoMsg 'Downloading package...'
-wget "$pkgUrl" --show-progress -qO - | tar -xz --strip-components=1
-
-infoMsg 'Building...'
-make -j $(nproc) geth
+printAction 'Building...'
+doMake geth
 ./build/bin/geth version
 
-infoMsg 'Installing...'
+printAction 'Installing...'
 rm -rf "$installDir"
 mkdir -p "$binDir" "$homeDir" "$installDir"
 
 mv "$tmpDir"/build/bin/* "$installDir"
 
-cat > "$installDir"/geth-wrapper.sh <<EOF
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'geth' "$(cat <<-EOF
 #!/usr/bin/env bash
-
 export HOME="$homeDir"
 export XDG_CONFIG_HOME="$homeDir/.config"
 export XDG_CACHE_HOME="$homeDir/.cache"
 export XDG_DATA_HOME="$homeDir/.local/share"
-
 "$installDir"/geth "\$@"
 EOF
+)"
 
-ln -fs "$installDir"/geth-wrapper.sh "$binDir"/geth
-chmod 755 "$binDir"/geth
-
-infoMsg 'Removing temp files...'
+printAction 'Removing temp files...'
 rm -rf "$tmpDir"
 
