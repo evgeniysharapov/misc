@@ -70,8 +70,7 @@ RUN chown -R zeronet:zeronet /home/zeronet
 # Set upstart command
 CMD \
 	tor -f .torrc; \
-	git pull; \
-	python zeronet.py \
+	python ./zeronet.py \
 		--fileserver_ip 0.0.0.0 \
 		--fileserver_port 15441 \
 		--ui_ip 0.0.0.0 \
