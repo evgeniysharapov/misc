@@ -5,49 +5,52 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 # Dependencies:
-#   automake
-#   build-essential
-#   flite1-dev
-#   frei0r-plugins-dev
-#   ladspa-sdk
-#   libass-dev
-#   libavc1394-dev
-#   libbluray-dev
-#   libbs2b-dev
-#   libcaca-dev
-#   libcdio-paranoia-dev
-#   libfdk-aac-dev
-#   libgme-dev
-#   libgsm1-dev
-#   libiec61883-dev
-#   libmodplug-dev
-#   libmp3lame-dev
-#   libopenal-dev
-#   libopencv-dev
-#   libopenjpeg-dev
-#   libopus-dev
-#   libpulse-dev
-#   librtmp-dev
-#   libschroedinger-dev
-#   libsdl2-dev
-#   libshine-dev
-#   libsnappy-dev
-#   libsoxr-dev
-#   libspeex-dev
-#   libtheora-dev
-#   libtwolame-dev
-#   libvorbis-dev
-#   libvpx-dev
-#   libwavpack-dev
-#   libwebp-dev
-#   libx264-dev
-#   libx265-dev
-#   libxvidcore-dev
-#   libzmq3-dev
-#   libzvbi-dev
-#   ocl-icd-opencl-dev
-#   pkg-config
-#   yasm
+#  automake
+#  build-essential
+#  flite1-dev
+#  frei0r-plugins-dev
+#  ladspa-sdk
+#  libass-dev
+#  libavc1394-dev
+#  libbluray-dev
+#  libbs2b-dev
+#  libcaca-dev
+#  libcdio-paranoia-dev
+#  libfdk-aac-dev
+#  libgme-dev
+#  libgsm1-dev
+#  libiec61883-dev
+#  libmodplug-dev
+#  libmp3lame-dev
+#  libnuma-dev
+#  libopenal-dev
+#  libopencv-dev
+#  libopenjpeg-dev
+#  libopus-dev
+#  libpulse-dev
+#  librtmp-dev
+#  libschroedinger-dev
+#  libsdl2-dev
+#  libshine-dev
+#  libsnappy-dev
+#  libsndio-dev
+#  libsoxr-dev
+#  libspeex-dev
+#  libssh-dev
+#  libtheora-dev
+#  libtwolame-dev
+#  libvorbis-dev
+#  libvpx-dev
+#  libwavpack-dev
+#  libwebp-dev
+#  libx264-dev
+#  libx265-dev
+#  libxvidcore-dev
+#  libzmq3-dev
+#  libzvbi-dev
+#  ocl-icd-opencl-dev
+#  pkg-config
+#  yasm
 #
 
 # Exit on errors
@@ -74,8 +77,8 @@ doConfigureAndMake \
 	--arch="$(uname -m)" \
 	--cpu=host \
 	--toolchain=hardened \
-	--disable-shared \
-	--enable-static \
+	--enable-shared \
+	--disable-static \
 	--disable-debug \
 	--disable-doc \
 	--enable-gpl \
@@ -139,6 +142,7 @@ doMake install
 printAction 'Creating wrappers...'
 createWrapper "$installDir" "$binDir" 'ffmpeg' "$(cat <<-EOF
 #!/usr/bin/env bash
+export LD_LIBRARY_PATH="$installDir/lib"
 "$installDir"/bin/ffmpeg \
 	-hide_banner \
 	"\$@"
@@ -146,6 +150,7 @@ EOF
 )"
 createWrapper "$installDir" "$binDir" 'ffplay' "$(cat <<-EOF
 #!/usr/bin/env bash
+export LD_LIBRARY_PATH="$installDir/lib"
 "$installDir"/bin/ffplay \
 	-hide_banner \
 	"\$@"
@@ -153,6 +158,7 @@ EOF
 )"
 createWrapper "$installDir" "$binDir" 'ffprobe' "$(cat <<-EOF
 #!/usr/bin/env bash
+export LD_LIBRARY_PATH="$installDir/lib"
 "$installDir"/bin/ffprobe \
 	-hide_banner \
 	"\$@"
@@ -160,6 +166,7 @@ EOF
 )"
 createWrapper "$installDir" "$binDir" 'ffserver' "$(cat <<-EOF
 #!/usr/bin/env bash
+export LD_LIBRARY_PATH="$installDir/lib"
 "$installDir"/bin/ffserver \
 	-hide_banner \
 	"\$@"

@@ -1,0 +1,241 @@
+#!/usr/bin/env bash
+
+# Author:     Héctor Molinero Fernández <hector@molinero.xyz>
+# Repository: https://github.com/zant95/misc
+# License:    MIT, https://opensource.org/licenses/MIT
+#
+# Dependencies:
+#  ant
+#  automake
+#  autopoint
+#  build-essential
+#  cmake
+#  cvs
+#  gettext
+#  git
+#  liba52-0.7.4-dev
+#  libarchive-dev
+#  libasound2-dev
+#  libass-dev
+#  libavahi-client-dev
+#  libavc1394-dev
+#  libavcodec-dev
+#  libavdevice-dev
+#  libavformat-dev
+#  libbluray-dev
+#  libcaca-dev
+#  libcddb2-dev
+#  libcdio-dev
+#  libchromaprint-dev
+#  libcrystalhd-dev
+#  libdbus-1-dev
+#  libdc1394-22-dev
+#  libdca-dev
+#  libdvbpsi-dev
+#  libdvdnav-dev
+#  libdvdread-dev
+#  libebml-dev
+#  libexpat1-dev
+#  libfaac-dev
+#  libfaad-dev
+#  libflac-dev
+#  libfluidsynth-dev
+#  libfreerdp-dev
+#  libfreetype6-dev
+#  libfribidi-dev
+#  libgcrypt20-dev
+#  libgme-dev
+#  libgnomevfs2-dev
+#  libgstreamer-plugins-base1.0-dev
+#  libjack-jackd2-dev
+#  libkate-dev
+#  liblivemedia-dev
+#  liblua5.2-dev
+#  libmad0-dev
+#  libmatroska-dev
+#  libminizip-dev
+#  libmodplug-dev
+#  libmp3lame-dev
+#  libmpcdec-dev
+#  libmpeg2-4-dev
+#  libmpg123-dev
+#  libmtp-dev
+#  libncurses5-dev
+#  libncursesw5-dev
+#  libnfs-dev
+#  libnotify-dev
+#  libogg-dev
+#  libopencv-dev
+#  libopus-dev
+#  libpostproc-dev
+#  libprojectm-dev
+#  libprotoc-dev
+#  libpulse-dev
+#  libqt5x11extras5-dev
+#  libraw1394-dev
+#  librsvg2-dev
+#  libsamplerate0-dev
+#  libschroedinger-dev
+#  libsdl-image1.2-dev
+#  libsecret-1-dev
+#  libshine-dev
+#  libshout3-dev
+#  libsidplay2-dev
+#  libsidplayfp-dev
+#  libsmbclient-dev
+#  libsoxr-dev
+#  libspeex-dev
+#  libspeexdsp-dev
+#  libssh2-1-dev
+#  libswscale-dev
+#  libsystemd-dev
+#  libtag1-dev
+#  libtar-dev
+#  libtheora-dev
+#  libtool
+#  libtwolame-dev
+#  libudev-dev
+#  libupnp-dev
+#  libva-dev
+#  libvdpau-dev
+#  libvncserver-dev
+#  libvorbis-dev
+#  libvpx-dev
+#  libx264-dev
+#  libx265-dev
+#  libxcb-composite0-dev
+#  libxcb-keysyms1-dev
+#  libxcb-xv0-dev
+#  libxml2-dev
+#  libxpm-dev
+#  libzvbi-dev
+#  lua5.2
+#  openjdk-8-jdk
+#  pkg-config
+#  protobuf-compiler
+#  qtbase5-dev
+#  ragel
+#  yasm
+#
+
+# Exit on errors
+set -euo pipefail
+
+# Globals
+scriptDir=$(dirname "$(readlink -f "$0")")
+binDir="$HOME/.opt/bin"
+baseDir="$HOME/.opt/vlc"
+homeDir="$baseDir/home"
+installDir="$baseDir/install"
+tmpDir=$(mktemp -d /tmp/vlc.XXXXXXXX)
+gitUrl='https://github.com/videolan/vlc.git'
+
+# Load helpers
+source "$scriptDir"/_helpers_
+
+# Process
+printAction 'Cloning remote repository...'
+doGitCloneAndCd "$gitUrl" "$tmpDir"
+
+printAction 'Building...'
+
+patch ./bin/Makefile.am <<'EOF'
+--- a/bin/Makefile.am
++++ b/bin/Makefile.am
+@@ -53,3 +53,3 @@
+ vlc_LDFLAGS = $(LDFLAGS_vlc)
+-vlc_LDADD = ../lib/libvlc.la $(LIBPTHREAD)
++vlc_LDADD = ../src/libvlccore.la ../lib/libvlc.la $(LIBPTHREAD)
+ 
+@@ -83,2 +83,3 @@
+ 	../compat/libcompat.la \
++	../src/libvlccore.la \
+ 	../lib/libvlc.la
+EOF
+
+PKG_CONFIG_PATH="$HOME/.opt/ffmpeg/lib/pkgconfig" \
+doConfigureAndMake \
+	--prefix="$installDir" \
+	--disable-update-check
+
+printAction 'Installing...'
+rm -rf "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"
+
+doMake install
+
+printAction 'Creating wrappers...'
+createWrapper "$installDir" "$binDir" 'cvlc' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+"$installDir"/bin/cvlc "\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'nvlc' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+"$installDir"/bin/nvlc "\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'qvlc' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+"$installDir"/bin/qvlc "\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'rvlc' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+"$installDir"/bin/rvlc "\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'svlc' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+"$installDir"/bin/svlc "\$@"
+EOF
+)"
+createWrapper "$installDir" "$binDir" 'vlc' "$(cat <<-EOF
+#!/usr/bin/env bash
+export HOME="$homeDir"
+export XDG_CONFIG_HOME="$homeDir/.config"
+export XDG_CACHE_HOME="$homeDir/.cache"
+export XDG_DATA_HOME="$homeDir/.local/share"
+"$installDir"/bin/vlc "\$@"
+EOF
+)"
+
+printAction 'Creating launchers...'
+createLauncher "$installDir" 'vlc' "$(cat <<-EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=VLC media player
+Categories=AudioVideo;Player;Recorder;
+Keywords=Player;Capture;DVD;Audio;Video;Server;Broadcast;
+StartupNotify=true
+Terminal=false
+Exec=$binDir/vlc --started-from-file %u
+Icon=vlc
+MimeType=application/ogg;application/x-ogg;audio/ogg;audio/x-vorbis;audio/x-vorbis+ogg;video/ogg;video/x-ogm+ogg;video/x-theora+ogg;video/x-theora;audio/x-speex;audio/opus;application/x-flac;audio/flac;audio/x-flac;audio/x-ms-asf;audio/x-ms-asx;audio/x-ms-wax;audio/x-ms-wma;video/x-ms-asf;video/x-ms-asf-plugin;video/x-ms-asx;video/x-ms-wm;video/x-ms-wmv;video/x-ms-wmx;video/x-ms-wvx;video/x-msvideo;audio/x-pn-windows-acm;video/divx;video/msvideo;video/vnd.divx;video/x-avi;application/vnd.rn-realmedia;application/vnd.rn-realmedia-vbr;audio/vnd.rn-realaudio;audio/x-pn-realaudio;audio/x-pn-realaudio-plugin;audio/x-real-audio;audio/x-realaudio;video/vnd.rn-realvideo;audio/mpeg;audio/mpg;audio/mp1;audio/mp2;audio/mp3;audio/x-mp1;audio/x-mp2;audio/x-mp3;audio/x-mpeg;audio/x-mpg;video/mp2t;video/mpeg;video/mpeg-system;video/x-mpeg;video/x-mpeg2;video/x-mpeg-system;application/mpeg4-iod;application/mpeg4-muxcodetable;application/x-extension-m4a;application/x-extension-mp4;audio/aac;audio/m4a;audio/mp4;audio/x-m4a;audio/x-aac;video/mp4;video/mp4v-es;video/x-m4v;application/x-quicktime-media-link;application/x-quicktimeplayer;video/quicktime;application/x-matroska;audio/x-matroska;video/x-matroska;video/webm;audio/webm;audio/3gpp;audio/3gpp2;audio/AMR;audio/AMR-WB;audio/amr;audio/amr-wb;video/3gp;video/3gpp;video/3gpp2;x-scheme-handler/mms;x-scheme-handler/mmsh;x-scheme-handler/rtsp;x-scheme-handler/rtp;x-scheme-handler/rtmp;x-scheme-handler/icy;x-scheme-handler/icyx;x-content/video-vcd;x-content/video-svcd;x-content/video-dvd;x-content/audio-cdda;x-content/audio-player;application/ram;application/xspf+xml;audio/mpegurl;audio/x-mpegurl;audio/scpls;audio/x-scpls;text/google-video-pointer;text/x-google-video-pointer;video/vnd.mpegurl;application/vnd.apple.mpegurl;application/vnd.ms-asf;application/vnd.ms-wpl;application/sdp;audio/dv;video/dv;audio/x-aiff;audio/x-pn-aiff;video/x-anim;video/x-nsv;video/fli;video/flv;video/x-flc;video/x-fli;video/x-flv;audio/wav;audio/x-pn-au;audio/x-pn-wav;audio/x-wav;audio/ac3;audio/eac3;audio/vnd.dts;audio/vnd.dts.hd;audio/vnd.dolby.heaac.1;audio/vnd.dolby.heaac.2;audio/vnd.dolby.mlp;audio/basic;audio/midi;audio/x-ape;audio/x-gsm;audio/x-musepack;audio/x-tta;audio/x-wavpack;audio/x-shorten;application/x-shockwave-flash;application/x-flash-video;misc/ultravox;image/vnd.rn-realpix;audio/x-it;audio/x-mod;audio/x-s3m;audio/x-xm;application/mxf;
+EOF
+)"
+
+printAction 'Removing temp files...'
+rm -rf "$tmpDir"
+
