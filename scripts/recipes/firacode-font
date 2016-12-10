@@ -17,8 +17,8 @@ scriptDir=$(dirname "$(readlink -f "$0")")
 installDir='/usr/share/fonts/opentype/FiraCode'
 tmpDir=$(mktemp -d /tmp/firacode-font.XXXXXXXX)
 pkgUrl='https://github.com'$(
-	curl -sL 'https://github.com/tonsky/FiraCode/releases/latest' | \
-	egrep -o '/tonsky/FiraCode/releases/download/[^>]+/FiraCode_.+\.zip' | \
+	curl -sL 'https://github.com/tonsky/FiraCode/releases/latest' |
+	egrep -o '/tonsky/FiraCode/releases/download/[^>]+/FiraCode_.+\.zip' |
 	head -1
 )
 

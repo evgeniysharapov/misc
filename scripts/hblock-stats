@@ -5,6 +5,6 @@
 # License:    MIT, https://opensource.org/licenses/MIT
 #
 
-curl -s 'https://raw.githubusercontent.com/zant95/hblock/master/resources/stats/suffix.sh' | \
+curl -fsS 'https://raw.githubusercontent.com/zant95/hblock/master/resources/stats/suffix.sh' |
 	tac | tac | sh -s - "$@"
 

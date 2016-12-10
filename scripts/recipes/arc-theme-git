@@ -36,7 +36,7 @@ printAction 'Building...'
 printAction 'Installing...'
 sudo rm -rf "$installDir"/{Arc,Arc-Darker,Arc-Dark}
 
-sudo doMake install
+sudo make install
 
 printAction 'Removing temp files...'
 rm -rf "$tmpDir"

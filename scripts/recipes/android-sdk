@@ -20,8 +20,8 @@ homeDir="$baseDir/home"
 installDir="$baseDir/install/sdk"
 tmpDir=$(mktemp -d /tmp/android-sdk.XXXXXXXX)
 pkgUrl=$(
-	curl -sL 'https://developer.android.com/studio/index.html' | \
-	egrep -o 'https://dl\.google\.com/[^>]+/android-sdk_r[^>]+-linux\.tgz' | \
+	curl -sL 'https://developer.android.com/studio/index.html' |
+	egrep -o 'https://dl\.google\.com/[^>]+/tools_r[^>]+-linux\.zip' |
 	head -1
 )
 
@@ -34,17 +34,17 @@ downloadExtractAndCd "$pkgUrl" "$tmpDir"
 
 printAction 'Installing...'
 rm -rf "$installDir"
-mkdir -p "$binDir" "$homeDir" "$installDir"
+mkdir -p "$binDir" "$homeDir" "$installDir"/tools
 
-cat > ./tools/android.patch <<-EOF
---- a/tools/android
-+++ b/tools/android
+cat > ./android.patch <<-EOF
+--- a/android
++++ b/android
 @@ -110 +110 @@
 -exec "\$java_cmd" \\
 +exec "\$java_cmd" -Duser.home="$homeDir" \\
 EOF
 
-mv "$tmpDir"/* "$installDir"
+mv "$tmpDir"/* "$installDir"/tools
 
 printAction 'Creating wrappers...'
 createWrapper "$installDir" "$binDir" 'android' "$(cat <<-EOF

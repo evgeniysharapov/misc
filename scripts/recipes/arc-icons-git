@@ -36,7 +36,7 @@ sed -i 's|^\(Inherits=\).*|\1Paper,elementary,elementary-git,Adwaita,gnome,hicol
 printAction 'Installing...'
 sudo rm -rf "$installDir"/Arc
 
-sudo doMake install
+sudo make install
 sudo gtk-update-icon-cache -f "$installDir"/Arc
 
 printAction 'Removing temp files...'

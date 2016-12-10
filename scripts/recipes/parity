@@ -19,8 +19,8 @@ homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/parity.XXXXXXXX)
 pkgUrl=$(
-	curl -sL 'https://github.com/ethcore/parity/releases/latest' | \
-	egrep -o 'https?://[a-z0-9]+\.cloudfront\.net/v[0-9.]+/x86_64-unknown-linux-gnu/parity_[0-9.]+_amd64\.deb' | \
+	curl -sL 'https://github.com/ethcore/parity/releases/latest' |
+	egrep -o 'https?://[a-z0-9]+\.cloudfront\.net/v[0-9.]+/x86_64-unknown-linux-gnu/parity_[0-9.]+_amd64\.deb' |
 	head -1
 )
 

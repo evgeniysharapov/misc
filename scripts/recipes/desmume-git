@@ -24,7 +24,6 @@
 #  libsdl1.2-dev
 #  libsoundtouch-dev
 #  libzzip-dev
-#  subversion
 #  zlib1g-dev
 #
 
@@ -38,16 +37,14 @@ baseDir="$HOME/.opt/desmume"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/desmume.XXXXXXXX)
-svnUrl='svn://svn.code.sf.net/p/desmume/code/trunk'
-# 0.9.11 -> r5146
-svnRev='latest'
+gitUrl='https://github.com/TASVideos/desmume.git'
 
 # Load helpers
 source "$scriptDir"/_helpers_
 
 # Process
 printAction 'Cloning remote repository...'
-doSvnCheckoutAndCd "$svnUrl" "$svnRev" "$tmpDir"
+doGitCloneAndCd "$gitUrl" "$tmpDir"
 
 printAction 'Building...'
 cd ./desmume
@@ -77,9 +74,7 @@ patch ./src/firmware.cpp <<'EOF'
 +	fw_config->language = 5;
 EOF
 
-CPPFLAGS='-std=gnu++14 -O2 -march=native -mfpmath=sse' \
-CFLAGS="$CPPFLAGS" \
-CXXFLAGS="$CPPFLAGS" \
+cd ./src/frontend/posix
 doConfigureAndMake \
 	--prefix="$installDir" \
 	--enable-debug \

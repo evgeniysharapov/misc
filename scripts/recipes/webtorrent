@@ -19,8 +19,8 @@ homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/webtorrent.XXXXXXXX)
 pkgUrl='https://github.com'$(
-	curl -sL 'https://github.com/feross/webtorrent-desktop/releases/latest' | \
-	egrep -o '/feross/webtorrent-desktop/releases/download/[^>]+/WebTorrent-[^>]+-linux\.zip' | \
+	curl -sL 'https://github.com/feross/webtorrent-desktop/releases/latest' |
+	egrep -o '/feross/webtorrent-desktop/releases/download/[^>]+/WebTorrent-[^>]+-linux\.zip' |
 	head -1
 )
 

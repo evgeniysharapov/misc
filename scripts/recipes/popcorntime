@@ -19,8 +19,8 @@ homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/popcorntime.XXXXXXXX)
 pkgUrl=$(
-	curl -sL 'https://popcorntime.sh/en' | \
-	egrep -o 'https://[^>]+-Linux-64\.tar\.xz' | \
+	curl -sL 'https://popcorntime.sh/en' |
+	egrep -o 'https://[^>]+-Linux-64\.tar\.xz' |
 	head -1
 )
 

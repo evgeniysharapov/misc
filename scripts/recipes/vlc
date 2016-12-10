@@ -128,14 +128,14 @@ baseDir="$HOME/.opt/vlc"
 homeDir="$baseDir/home"
 installDir="$baseDir/install"
 tmpDir=$(mktemp -d /tmp/vlc.XXXXXXXX)
-gitUrl='https://github.com/videolan/vlc.git'
+pkgUrl='https://nightlies.videolan.org/build/source/last'
 
 # Load helpers
 source "$scriptDir"/_helpers_
 
 # Process
-printAction 'Cloning remote repository...'
-doGitCloneAndCd "$gitUrl" "$tmpDir"
+printAction 'Downloading package...'
+downloadExtractAndCd "$pkgUrl" "$tmpDir"
 
 printAction 'Building...'
 
@@ -225,7 +225,7 @@ createLauncher "$installDir" 'vlc' "$(cat <<-EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=VLC media player
+Name=VLC media player (Git)
 Categories=AudioVideo;Player;Recorder;
 Keywords=Player;Capture;DVD;Audio;Video;Server;Broadcast;
 StartupNotify=true

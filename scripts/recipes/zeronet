@@ -43,11 +43,11 @@ RUN \
 
 # Create ZeroNet user
 RUN addgroup \
-	--gid $(id -g $(whoami)) \
+	--gid $(id -g "$(whoami)") \
 	zeronet
 RUN adduser \
 	--home /home/zeronet \
-	--uid $(id -u $(whoami)) \
+	--uid $(id -u "$(whoami)") \
 	--ingroup zeronet \
 	--disabled-password \
 	--gecos '' \

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Author:     Héctor Molinero Fernández <hector@molinero.xyz>
 # Repository: https://github.com/zant95/misc
@@ -11,17 +11,17 @@
 #
 
 # Exit on errors
-set -euo pipefail
+set -eu
 
 # Globals
-scriptDir=$(dirname "$(readlink -f "$0")")
 tmpDir=$(mktemp -d /tmp/music-dl.XXXXXXXX)
 outDir="$HOME/Downloads"
-ffmpegLoc=$(
-	[ -f "$HOME/.opt/bin/ffmpeg" ] && \
-		echo "$HOME/.opt/bin/ffmpeg" || \
-		echo "$(which ffmpeg)"
-)
+
+if [ -f "$HOME/.opt/bin/ffmpeg" ]; then
+	ffmpegLoc="$HOME/.opt/bin/ffmpeg"
+else
+	ffmpegLoc=$(which ffmpeg)
+fi
 
 # Methods
 printAction() {
@@ -29,7 +29,7 @@ printAction() {
 }
 
 # Process
-mkdir -p "$tmpDir"/{before,after}
+mkdir -p "$tmpDir"/before "$tmpDir"/after
 cd "$tmpDir"
 
 printAction 'Downloading...'

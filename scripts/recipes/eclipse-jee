@@ -22,8 +22,8 @@ tmpDir=$(mktemp -d /tmp/eclipse-jee.XXXXXXXX)
 pkgBaseUrl='https://www.mirrorservice.org/sites/download.eclipse.org/eclipseMirror/technology/epp/downloads/release'
 pkgVersion=$(curl -sL "$pkgBaseUrl/release.xml" | sed -nE 's/<present>(.+)<\/present>/\1/g;/^</!p')
 pkgUrl="$pkgBaseUrl/$pkgVersion"/$(
-	curl -sL "$pkgBaseUrl/$pkgVersion" | \
-	egrep -o 'eclipse-jee-[^>]+-linux-gtk-x86_64\.tar\.gz' | \
+	curl -sL "$pkgBaseUrl/$pkgVersion" |
+	egrep -o 'eclipse-jee-[^>]+-linux-gtk-x86_64\.tar\.gz' |
 	head -1
 )
 

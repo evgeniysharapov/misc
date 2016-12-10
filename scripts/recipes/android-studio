@@ -23,8 +23,8 @@ homeDir="$baseDir/home"
 installDir="$baseDir/install/studio"
 tmpDir=$(mktemp -d /tmp/android-studio.XXXXXXXX)
 pkgUrl=$(
-	curl -sL 'https://developer.android.com/studio/index.html' | \
-	egrep -o 'https://dl\.google\.com/[^>]+/android-studio-ide-[^>]+-linux\.zip' | \
+	curl -sL 'https://developer.android.com/studio/index.html' |
+	egrep -o 'https://dl\.google\.com/[^>]+/android-studio-ide-[^>]+-linux\.zip' |
 	head -1
 )
 
